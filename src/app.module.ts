@@ -4,10 +4,12 @@ import { LoggerModule } from 'nestjs-pino';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { RedisTestController } from './app.redis-test.controller';
 import configurations from './config/configuration';
 import { validateEnv } from './config/env.validation';
 import { loggerConfig } from './common/logger';
 import { PrismaModule } from './common/prisma';
+import { RedisModule } from './common/redis';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { TraceIdMiddleware } from './common/middleware';
 import { UsersModule } from './modules/users';
@@ -29,13 +31,15 @@ import { JwtAuthGuard } from './common/guards';
     LoggerModule.forRoot(loggerConfig),
     // 数据库模块
     PrismaModule,
+    // 缓存模块
+    RedisModule,
     // 业务模块
     UsersModule,
     AuthModule,
     RolesModule,
     PermissionsModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, RedisTestController],
   providers: [
     AppService,
     // 全局异常过滤器

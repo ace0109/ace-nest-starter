@@ -2,7 +2,7 @@
 
 > 基于需求讨论的开发路线图和任务分解
 
-**Current Status**: Phase 3 (API Documentation & Validation) completed ✅
+**Current Status**: Phase 4.1 (Redis Cache Module) completed ✅
 
 ---
 
@@ -867,15 +867,97 @@ curl -X OPTIONS http://localhost:3000/api \
 
 ### 任务清单
 
-#### 4.1 Redis 缓存模块 ⭐⭐⭐
+#### 4.1 Redis 缓存模块 ⭐⭐⭐ ✅
 **优先级**: P1 (重要)
+**状态**: 已完成
 
 **实现内容**:
-- [ ] 安装 Redis 相关依赖
-- [ ] 配置 Redis 连接
-- [ ] Token 黑名单实现
-- [ ] 验证码存储实现
-- [ ] 缓存装饰器 (可选)
+- [x] 安装 Redis 相关依赖
+- [x] 配置 Redis 连接
+- [x] Token 黑名单实现
+- [x] 验证码存储实现
+- [x] 缓存装饰器
+
+**已实现功能**:
+- ✅ Redis 基础服务 (RedisService)
+- ✅ Token 黑名单服务 (BlacklistService)
+- ✅ 验证码服务 (CaptchaService) - 支持 email/sms/image 类型
+- ✅ 缓存装饰器 (@Cacheable, @CacheEvict, @Cache 等)
+- ✅ Redis 健康检查指示器
+- ✅ 测试控制器验证所有功能
+- ✅ 集成到全局模块
+
+**验证步骤**:
+1. 启动应用:
+   ```bash
+   pnpm start:dev
+   ```
+
+2. 测试基础缓存操作:
+   ```bash
+   # 设置缓存值
+   curl -X POST http://localhost:3000/test/redis/set \
+     -H "Content-Type: application/json" \
+     -d '{"key": "test", "value": "hello", "ttl": 60}'
+
+   # 获取缓存值
+   curl http://localhost:3000/test/redis/get/test
+   ```
+
+3. 测试Token黑名单:
+   ```bash
+   # 添加token到黑名单
+   curl -X POST http://localhost:3000/test/redis/blacklist/token \
+     -H "Content-Type: application/json" \
+     -d '{"token": "jwt-token-here", "ttl": 3600}'
+
+   # 检查token是否在黑名单
+   curl http://localhost:3000/test/redis/blacklist/token/jwt-token-here
+   ```
+
+4. 测试验证码功能:
+   ```bash
+   # 创建验证码
+   curl -X POST http://localhost:3000/test/redis/captcha/create \
+     -H "Content-Type: application/json" \
+     -d '{"key": "user@example.com", "type": "email"}'
+
+   # 验证验证码
+   curl -X POST http://localhost:3000/test/redis/captcha/verify \
+     -H "Content-Type: application/json" \
+     -d '{"key": "user@example.com", "code": "123456", "type": "email"}'
+   ```
+
+5. 测试缓存装饰器:
+   ```bash
+   # 第一次调用会执行方法并缓存结果
+   curl http://localhost:3000/test/redis/cache/test/123
+
+   # 第二次调用会直接返回缓存结果
+   curl http://localhost:3000/test/redis/cache/test/123
+
+   # 清除缓存
+   curl -X DELETE http://localhost:3000/test/redis/cache/test/123
+   ```
+
+**文件清单**:
+- `src/common/redis/redis.module.ts` (51行)
+- `src/common/redis/redis.service.ts` (199行)
+- `src/common/redis/blacklist.service.ts` (135行)
+- `src/common/redis/captcha.service.ts` (234行)
+- `src/common/redis/redis.health.ts` (96行)
+- `src/common/redis/decorators/cache.decorator.ts` (307行)
+- `src/common/redis/index.ts` (6行)
+- `src/app.redis-test.controller.ts` (213行) - 测试控制器
+- `package.json` (更新: 添加 Redis 相关依赖)
+
+**验收标准**:
+- ✅ Redis 连接成功
+- ✅ Token 黑名单功能正常
+- ✅ 验证码功能正常
+- ✅ 缓存装饰器功能正常
+- ✅ ESLint 0 错误
+- ✅ TypeScript 编译通过
 
 ---
 
