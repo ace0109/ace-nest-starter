@@ -21,4 +21,5 @@ async function bootstrap() {
   console.log(`🌐 Network:     http://0.0.0.0:${port}`);
   console.log('');
 }
-bootstrap();
+
+void bootstrap();

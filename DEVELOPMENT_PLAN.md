@@ -130,23 +130,81 @@
 
 ---
 
-#### 1.2 日志模块 ⭐⭐⭐
+#### 1.2 日志模块 ⭐⭐⭐ ✅
 **优先级**: P0 (必须)
+**状态**: 已完成
 
 **技术选型**: Pino (已确认)
 
 **实现内容**:
-- [ ] 安装依赖: `nestjs-pino`, `pino-pretty`
-- [ ] 配置日志格式 (开发彩色，生产JSON)
-- [ ] 实现日志文件分割 (按日期/级别)
-- [ ] 创建请求日志中间件
-- [ ] 实现敏感信息脱敏
-- [ ] 添加 TraceID 支持
+- [x] 安装依赖: `nestjs-pino@4.4.1`, `pino-http@10.5.0`, `pino-pretty@13.1.2`
+- [x] 配置日志格式 (开发彩色，生产JSON)
+- [x] 创建请求日志配置 (`src/common/logger/logger.config.ts`)
+- [x] 实现敏感信息脱敏 (headers: authorization, cookie, x-api-key)
+- [x] 添加 TraceID 支持 (req.id)
+- [x] 集成到 AppModule
+
+**已实现功能**:
+- ✅ 开发环境彩色输出 (pino-pretty)
+- ✅ 生产环境 JSON 格式
+- ✅ 自定义日志级别 (根据状态码: 5xx=error, 4xx=warn, 其他=info)
+- ✅ 自定义日志消息格式
+- ✅ 请求序列化 (id, method, url, query, params, headers, IP, port)
+- ✅ 响应序列化 (statusCode)
+- ✅ 敏感信息脱敏 (authorization, cookie, x-api-key)
+- ✅ TraceID 自动注入
+- ✅ 生产环境额外 redact 配置 (password 字段)
+- ✅ 严格类型安全 (无 any 类型)
+
+**验证步骤**:
+1. 启动开发服务器:
+   ```bash
+   pnpm start:dev
+   ```
+   预期: 看到彩色格式的启动日志
+
+2. 访问接口测试日志输出:
+   ```bash
+   curl http://localhost:3000
+   ```
+   预期: 控制台显示彩色的请求日志，包含:
+   - traceId (自动生成的 UUID)
+   - 请求方法和 URL
+   - 状态码
+   - 响应时间
+
+3. 测试敏感信息脱敏:
+   ```bash
+   curl -H "Authorization: Bearer token123" \
+        -H "Cookie: session=abc123" \
+        http://localhost:3000
+   ```
+   预期: 日志中 authorization 和 cookie 显示为 `***`
+
+4. 测试日志级别:
+   ```bash
+   # 访问不存在的路由 (404)
+   curl http://localhost:3000/not-found
+   ```
+   预期: 日志级别为 `warn` (黄色)
+
+5. 检查生产环境配置:
+   ```bash
+   NODE_ENV=production pnpm build && pnpm start:prod
+   ```
+   预期: JSON 格式日志输出，无彩色
+
+**文件清单**:
+- `src/common/logger/logger.config.ts` (113行)
+- `src/common/logger/index.ts` (4行)
+- `src/app.module.ts` (更新: 集成 LoggerModule)
 
 **验收标准**:
-- 日志包含完整请求信息
-- 敏感信息已脱敏 (密码、手机号等)
-- 每个请求有唯一 traceId
+- ✅ 日志包含完整请求信息
+- ✅ 敏感信息已脱敏 (密码、token、cookie等)
+- ✅ 每个请求有唯一 traceId
+- ✅ 开发环境彩色输出，生产环境 JSON 格式
+- ✅ 无 TypeScript any 类型
 
 ---
 

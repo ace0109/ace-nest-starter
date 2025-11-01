@@ -26,6 +26,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Current Development Status**: Check `DEVELOPMENT_PLAN.md` for the latest completed tasks and next task to work on.
 
+## Code Quality Standards
+
+**TypeScript Type Safety**:
+- ❌ **NEVER use `any` type** - Always use proper TypeScript types
+- ✅ Define explicit interfaces/types for function parameters and return values
+- ✅ Use type inference when types are obvious
+- ✅ For third-party library types, import proper type definitions
+- ✅ Use `unknown` instead of `any` when type is truly unknown, then narrow it with type guards
+
 ## Development Commands
 
 ```bash
