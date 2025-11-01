@@ -40,6 +40,7 @@
     "dev:clean": "pnpm docker:clean"
   },
   "dependencies": {
+    "@nest-lab/throttler-storage-redis": "^1.1.0",
     "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -50,6 +51,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.1",
     "@nestjs/terminus": "^11.0.0",
+    "@nestjs/throttler": "^6.4.0",
     "@prisma/client": "^6.18.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
@@ -57,6 +59,7 @@
     "cache-manager-redis-yet": "^5.1.5",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "ioredis": "^5.8.2",
     "nestjs-pino": "^4.4.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

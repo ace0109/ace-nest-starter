@@ -91,6 +91,30 @@ export const oauthConfig = registerAs('oauth', () => ({
 }));
 
 /**
+ * 限流配置
+ * Rate limiting configuration
+ */
+export const throttlerConfig = registerAs('throttler', () => ({
+  // 全局限流配置
+  global: {
+    ttl: parseInt(process.env.THROTTLE_TTL ?? '60', 10), // 60秒
+    limit: parseInt(process.env.THROTTLE_LIMIT ?? '100', 10), // 100次请求
+  },
+  // 登录接口限流配置
+  auth: {
+    ttl: parseInt(process.env.THROTTLE_AUTH_TTL ?? '60', 10), // 60秒
+    limit: parseInt(process.env.THROTTLE_AUTH_LIMIT ?? '5', 10), // 5次请求
+  },
+  // API 接口限流配置
+  api: {
+    ttl: parseInt(process.env.THROTTLE_API_TTL ?? '60', 10), // 60秒
+    limit: parseInt(process.env.THROTTLE_API_LIMIT ?? '50', 10), // 50次请求
+  },
+  // 是否使用 Redis 存储
+  useRedis: process.env.THROTTLE_USE_REDIS === 'true',
+}));
+
+/**
  * 导出所有配置
  */
 export default [
@@ -101,4 +125,5 @@ export default [
   smtpConfig,
   logConfig,
   oauthConfig,
+  throttlerConfig,
 ];

@@ -5,11 +5,13 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RedisTestController } from './app.redis-test.controller';
+import { ThrottlerTestController } from './app.throttler-test.controller';
 import configurations from './config/configuration';
 import { validateEnv } from './config/env.validation';
 import { loggerConfig } from './common/logger';
 import { PrismaModule } from './common/prisma';
 import { RedisModule } from './common/redis';
+import { ThrottlerModule, CustomThrottlerGuard } from './common/throttler';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { TraceIdMiddleware } from './common/middleware';
 import { UsersModule } from './modules/users';
@@ -33,13 +35,15 @@ import { JwtAuthGuard } from './common/guards';
     PrismaModule,
     // 缓存模块
     RedisModule,
+    // 限流模块
+    ThrottlerModule,
     // 业务模块
     UsersModule,
     AuthModule,
     RolesModule,
     PermissionsModule,
   ],
-  controllers: [AppController, RedisTestController],
+  controllers: [AppController, RedisTestController, ThrottlerTestController],
   providers: [
     AppService,
     // 全局异常过滤器
@@ -51,6 +55,11 @@ import { JwtAuthGuard } from './common/guards';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    // 全局限流守卫
+    {
+      provide: APP_GUARD,
+      useClass: CustomThrottlerGuard,
     },
   ],
 })

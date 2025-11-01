@@ -961,14 +961,69 @@ curl -X OPTIONS http://localhost:3000/api \
 
 ---
 
-#### 4.2 限流模块 ⭐⭐
+#### 4.2 限流模块 ⭐⭐ ✅
 **优先级**: P1 (重要)
+**状态**: 已完成
 
 **实现内容**:
-- [ ] 安装 `@nestjs/throttler`
-- [ ] 配置全局限流
-- [ ] Redis 存储限流记录
-- [ ] 自定义限流装饰器
+- [x] 安装 `@nestjs/throttler`
+- [x] 配置全局限流
+- [x] Redis 存储限流记录
+- [x] 自定义限流装饰器
+
+**已实现功能**:
+- ✅ 安装 @nestjs/throttler 和 @nest-lab/throttler-storage-redis
+- ✅ 全局限流配置 (60秒内最多100次)
+- ✅ Redis 存储限流记录（支持集群环境）
+- ✅ 自定义限流装饰器 (@AuthThrottle, @ApiThrottle, @StrictThrottle)
+- ✅ 自定义限流守卫 (基于IP或用户ID)
+- ✅ 限流服务（统计、重置功能）
+- ✅ 测试控制器验证所有功能
+- ✅ 环境变量配置支持
+
+**验证步骤**:
+1. 测试默认限流（60秒内最多100次）:
+   ```bash
+   curl -X GET http://localhost:3000/test/throttler/default
+   ```
+
+2. 测试严格限流（60秒内最多3次）:
+   ```bash
+   # 连续发送4次请求，第4次会被限流
+   for i in {1..4}; do
+     curl -X POST http://localhost:3000/test/throttler/strict
+     echo
+   done
+   ```
+
+3. 测试认证接口限流（60秒内最多5次）:
+   ```bash
+   curl -X POST http://localhost:3000/test/throttler/auth
+   ```
+
+4. 测试跳过限流:
+   ```bash
+   curl -X GET http://localhost:3000/test/throttler/skip
+   ```
+
+**文件清单**:
+- `src/common/throttler/throttler.module.ts` (62行) - 限流模块配置
+- `src/common/throttler/throttler.guard.ts` (57行) - 自定义限流守卫
+- `src/common/throttler/throttler.decorator.ts` (43行) - 限流装饰器
+- `src/common/throttler/throttler.service.ts` (148行) - 限流服务
+- `src/common/throttler/index.ts` (4行) - 导出文件
+- `src/app.throttler-test.controller.ts` (208行) - 测试控制器
+- `src/config/configuration.ts` (更新: 添加 throttlerConfig)
+- `.env` (更新: 添加限流配置)
+- `.env.example` (更新: 添加限流配置说明)
+
+**验收标准**:
+- ✅ 全局限流正常工作
+- ✅ 自定义限流装饰器功能正常
+- ✅ Redis 存储限流记录成功
+- ✅ 限流触发后返回正确错误信息
+- ✅ ESLint 0 错误
+- ✅ TypeScript 编译通过
 
 ---
 
