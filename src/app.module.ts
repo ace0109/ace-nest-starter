@@ -10,6 +10,7 @@ import { loggerConfig } from './common/logger';
 import { PrismaModule } from './common/prisma';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { TraceIdMiddleware } from './common/middleware';
+import { UsersModule } from './modules/users';
 
 @Module({
   imports: [
@@ -24,6 +25,8 @@ import { TraceIdMiddleware } from './common/middleware';
     LoggerModule.forRoot(loggerConfig),
     // 数据库模块
     PrismaModule,
+    // 业务模块
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [

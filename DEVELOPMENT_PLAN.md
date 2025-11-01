@@ -2,7 +2,7 @@
 
 > 基于需求讨论的开发路线图和任务分解
 
-**Current Status**: Phase 1.5 (Response Interceptor) completed ✅
+**Current Status**: Phase 2.1 (User Module) completed ✅
 
 ---
 
@@ -508,15 +508,58 @@
 
 ### 任务清单
 
-#### 2.1 用户模块基础 ⭐⭐⭐
+#### 2.1 用户模块基础 ⭐⭐⭐ ✅
 **优先级**: P0 (必须)
+**状态**: 已完成
 
-**实现内容**:
-- [ ] 创建 User Entity (软删除)
-- [ ] 实现用户 CRUD
-- [ ] 密码加密 (bcrypt)
-- [ ] 用户注册接口
-- [ ] 邮箱验证 (可选)
+**已实现功能**:
+- ✅ 创建 User Entity (支持软删除)
+- ✅ 实现用户 CRUD 操作
+- ✅ 密码加密 (bcryptjs)
+- ✅ 用户注册接口
+- ✅ 数据验证 DTO (创建、更新、修改密码)
+- ✅ 分页查询支持
+
+**验证步骤**:
+```bash
+# 1. 创建新用户
+curl -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "username": "testuser",
+    "password": "Test123456",
+    "nickname": "Test User",
+    "phone": "13800138000"
+  }'
+
+# 2. 获取用户列表（分页）
+curl -X GET "http://localhost:3000/users?page=1&pageSize=10"
+
+# 3. 获取单个用户详情
+curl -X GET "http://localhost:3000/users/{userId}"
+
+# 4. 更新用户信息
+curl -X PATCH "http://localhost:3000/users/{userId}" \
+  -H "Content-Type: application/json" \
+  -d '{"nickname": "Updated Name", "phone": "13900139000"}'
+
+# 5. 软删除用户
+curl -X DELETE "http://localhost:3000/users/{userId}"
+
+# 6. 恢复已删除用户
+curl -X POST "http://localhost:3000/users/{userId}/restore"
+```
+
+**文件清单**:
+- `src/modules/users/users.module.ts` (13行)
+- `src/modules/users/users.controller.ts` (141行)
+- `src/modules/users/users.service.ts` (281行)
+- `src/modules/users/dto/create-user.dto.ts` (45行)
+- `src/modules/users/dto/update-user.dto.ts` (36行)
+- `src/modules/users/dto/change-password.dto.ts` (26行)
+- `src/modules/users/dto/index.ts` (3行)
+- `src/modules/users/index.ts` (4行)
 
 ---
 

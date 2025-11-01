@@ -1,0 +1,284 @@
+import { Injectable, ConflictException } from '@nestjs/common';
+import { PrismaService } from '../../common/prisma';
+import { CreateUserDto, UpdateUserDto, ChangePasswordDto } from './dto';
+import { User, UserStatus, Prisma } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
+import { BusinessException } from '../../common/exceptions/business.exception';
+
+/**
+ * 用户服务
+ */
+@Injectable()
+export class UsersService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * 创建用户
+   */
+  async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
+    // 检查邮箱是否已存在
+    const existingEmail = await this.prisma.user.findUnique({
+      where: { email: createUserDto.email },
+    });
+    if (existingEmail) {
+      throw new ConflictException('Email already exists');
+    }
+
+    // 检查用户名是否已存在
+    const existingUsername = await this.prisma.user.findUnique({
+      where: { username: createUserDto.username },
+    });
+    if (existingUsername) {
+      throw new ConflictException('Username already exists');
+    }
+
+    // 检查手机号是否已存在（如果提供）
+    if (createUserDto.phone) {
+      const existingPhone = await this.prisma.user.findUnique({
+        where: { phone: createUserDto.phone },
+      });
+      if (existingPhone) {
+        throw new ConflictException('Phone number already exists');
+      }
+    }
+
+    // 加密密码
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+    // 创建用户
+    const user = await this.prisma.user.create({
+      data: {
+        ...createUserDto,
+        password: hashedPassword,
+      },
+    });
+
+    // 移除密码字段
+    return this.excludePassword(user);
+  }
+
+  /**
+   * 查询所有用户（分页）
+   */
+  async findAll(params: {
+    skip?: number;
+    take?: number;
+    where?: Prisma.UserWhereInput;
+    orderBy?: Prisma.UserOrderByWithRelationInput;
+  }): Promise<{ users: Omit<User, 'password'>[]; total: number }> {
+    const { skip = 0, take = 10, where, orderBy } = params;
+
+    // 添加软删除条件
+    const whereWithDeleted = {
+      ...where,
+      deletedAt: null,
+    };
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        skip,
+        take,
+        where: whereWithDeleted,
+        orderBy: orderBy || { createdAt: 'desc' },
+        include: {
+          roles: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      }),
+      this.prisma.user.count({ where: whereWithDeleted }),
+    ]);
+
+    return {
+      users: users.map((user) => this.excludePassword(user)),
+      total,
+    };
+  }
+
+  /**
+   * 根据 ID 查询用户
+   */
+  async findOne(id: string): Promise<Omit<User, 'password'>> {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+      include: {
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw BusinessException.notFound('User', id);
+    }
+
+    return this.excludePassword(user);
+  }
+
+  /**
+   * 根据邮箱查询用户（包含密码，用于认证）
+   */
+  async findByEmail(email: string): Promise<User | null> {
+    return this.prisma.user.findFirst({
+      where: {
+        email,
+        deletedAt: null,
+      },
+    });
+  }
+
+  /**
+   * 根据用户名查询用户（包含密码，用于认证）
+   */
+  async findByUsername(username: string): Promise<User | null> {
+    return this.prisma.user.findFirst({
+      where: {
+        username,
+        deletedAt: null,
+      },
+    });
+  }
+
+  /**
+   * 更新用户
+   */
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<Omit<User, 'password'>> {
+    // 检查用户是否存在
+    await this.findOne(id);
+
+    // 检查手机号是否已存在（如果提供）
+    if (updateUserDto.phone) {
+      const existingPhone = await this.prisma.user.findFirst({
+        where: {
+          phone: updateUserDto.phone,
+          id: { not: id },
+          deletedAt: null,
+        },
+      });
+      if (existingPhone) {
+        throw new ConflictException('Phone number already exists');
+      }
+    }
+
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: updateUserDto,
+    });
+
+    return this.excludePassword(user);
+  }
+
+  /**
+   * 修改密码
+   */
+  async changePassword(
+    id: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
+
+    if (!user) {
+      throw BusinessException.notFound('User', id);
+    }
+
+    // 验证旧密码
+    const isPasswordValid = await bcrypt.compare(
+      changePasswordDto.oldPassword,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw BusinessException.invalidParameter('oldPassword', 'incorrect');
+    }
+
+    // 加密新密码
+    const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+
+    // 更新密码
+    await this.prisma.user.update({
+      where: { id },
+      data: { password: hashedPassword },
+    });
+
+    return { message: 'Password changed successfully' };
+  }
+
+  /**
+   * 软删除用户
+   */
+  async remove(id: string): Promise<{ message: string }> {
+    // 检查用户是否存在
+    await this.findOne(id);
+
+    // 软删除
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        status: UserStatus.INACTIVE,
+      },
+    });
+
+    return { message: 'User deleted successfully' };
+  }
+
+  /**
+   * 恢复已删除的用户
+   */
+  async restore(id: string): Promise<Omit<User, 'password'>> {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id,
+        deletedAt: { not: null },
+      },
+    });
+
+    if (!user) {
+      throw BusinessException.notFound('Deleted user', id);
+    }
+
+    const restoredUser = await this.prisma.user.update({
+      where: { id },
+      data: {
+        deletedAt: null,
+        status: UserStatus.ACTIVE,
+      },
+    });
+
+    return this.excludePassword(restoredUser);
+  }
+
+  /**
+   * 排除密码字段
+   */
+  private excludePassword<T extends { password?: string }>(
+    user: T,
+  ): Omit<T, 'password'> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
+}

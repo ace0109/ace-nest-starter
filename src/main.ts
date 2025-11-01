@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -18,6 +19,19 @@ async function bootstrap() {
 
   const port = configService.get<number>('app.port', 3000);
   const env = configService.get<string>('app.env', 'development');
+
+  // 配置全局验证管道
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // 自动删除未在 DTO 中声明的属性
+      transform: true, // 自动类型转换
+      forbidNonWhitelisted: true, // 禁止非白名单属性
+      errorHttpStatusCode: 400,
+      transformOptions: {
+        enableImplicitConversion: true, // 启用隐式类型转换
+      },
+    }),
+  );
 
   // 配置全局响应转换拦截器
   app.useGlobalInterceptors(new ResponseTransformInterceptor());
