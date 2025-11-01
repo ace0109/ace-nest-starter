@@ -48,14 +48,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3. **Verify TypeScript compilation** - Run `pnpm build` to ensure 0 TypeScript errors
 4. **Never commit code with linting errors** - This is a hard requirement
 
+**🚫 ABSOLUTELY FORBIDDEN**:
+- **DO NOT use `eslint-disable-next-line`** - This is NOT allowed
+- **DO NOT use `eslint-disable`** - This is NOT allowed
+- **DO NOT use `// @ts-ignore`** - This is NOT allowed
+- **ALWAYS fix the actual problem** - Don't suppress warnings/errors
+- **If you encounter an ESLint error, you MUST solve it properly**
+
 **Common ESLint Rules to Watch**:
-- ✅ No unused variables or imports
-- ✅ Proper type annotations (avoid `any`)
+- ✅ No unused variables or imports - Remove them instead of disabling
+- ✅ Proper type annotations (avoid `any`) - Use proper types
 - ✅ Consistent formatting (handled by Prettier)
-- ✅ Safe type operations (no unsafe member access)
-- ✅ Proper async/await usage
-- ✅ Exhaustive switch statements
-- ✅ No floating promises
+- ✅ Safe type operations (no unsafe member access) - Add proper type guards
+- ✅ Proper async/await usage - Handle promises correctly
+- ✅ Exhaustive switch statements - Add all cases or default
+- ✅ No floating promises - Always await or handle .catch()
+- ✅ Prefer const over let - Use const when variable won't be reassigned
+- ✅ No explicit any - Use unknown and type narrowing instead
 
 ### TypeScript Type Safety
 - ❌ **NEVER use `any` type** - Always use proper TypeScript types
@@ -63,7 +72,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ Use type inference when types are obvious
 - ✅ For third-party library types, import proper type definitions
 - ✅ Use `unknown` instead of `any` when type is truly unknown, then narrow it with type guards
-- ✅ If you MUST use `any` (rare cases), add ESLint disable comment with justification
+- ✅ If type is complex, create proper type definitions or use type assertion with caution
+- ✅ For dynamic objects, use Record<string, unknown> or proper generic types
 
 ## Development Commands
 

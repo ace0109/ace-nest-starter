@@ -5,6 +5,24 @@ import { User, UserStatus, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { BusinessException } from '../../common/exceptions/business.exception';
 
+// 定义包含关联数据的用户类型
+export type UserWithRoles = User & {
+  roles?: Array<{
+    role: {
+      id: string;
+      code: string;
+      name: string;
+      permissions?: Array<{
+        permission: {
+          id: string;
+          code: string;
+          name: string;
+        };
+      }>;
+    };
+  }>;
+};
+
 /**
  * 用户服务
  */
@@ -100,7 +118,7 @@ export class UsersService {
   /**
    * 根据 ID 查询用户
    */
-  async findOne(id: string): Promise<Omit<User, 'password'>> {
+  async findOne(id: string): Promise<Omit<UserWithRoles, 'password'>> {
     const user = await this.prisma.user.findFirst({
       where: {
         id,
@@ -277,8 +295,8 @@ export class UsersService {
   private excludePassword<T extends { password?: string }>(
     user: T,
   ): Omit<T, 'password'> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = user;
+    void password; // Mark as intentionally excluded
     return userWithoutPassword;
   }
 }
