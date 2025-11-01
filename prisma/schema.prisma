@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 用户模块 ====================
+
+/// 用户表
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique @db.VarChar(255)
+  username  String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(255)
+  nickname  String?  @db.VarChar(100)
+  avatar    String?  @db.VarChar(500)
+  phone     String?  @unique @db.VarChar(20)
+  status    UserStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+
+  roles     UserRole[]
+
+  @@map("users")
+  @@index([email])
+  @@index([username])
+}
+
+/// 角色表
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(50)
+  code        String   @unique @db.VarChar(50)
+  description String?  @db.VarChar(255)
+  isSystem    Boolean  @default(false) @map("is_system") // 系统内置角色不可删除
+  status      RoleStatus @default(ACTIVE)
+
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("roles")
+  @@index([code])
+}
+
+/// 权限表
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(100)
+  code        String   @unique @db.VarChar(100) // 格式: resource:action (如 user:create)
+  description String?  @db.VarChar(255)
+  module      String   @db.VarChar(50) // 所属模块 (如 user, post, comment)
+
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  roles       RolePermission[]
+
+  @@map("permissions")
+  @@index([code])
+  @@index([module])
+}
+
+// ==================== 关联表 ====================
+
+/// 用户角色关联表
+model UserRole {
+  userId String @map("user_id") @db.Uuid
+  roleId String @map("role_id") @db.Uuid
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+/// 角色权限关联表
+model RolePermission {
+  roleId       String @map("role_id") @db.Uuid
+  permissionId String @map("permission_id") @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ==================== 枚举类型 ====================
+
+/// 用户状态
+enum UserStatus {
+  ACTIVE   // 正常
+  INACTIVE // 禁用
+  LOCKED   // 锁定
+}
+
+/// 角色状态
+enum RoleStatus {
+  ACTIVE   // 启用
+  INACTIVE // 禁用
+}

@@ -22,7 +22,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. **Provide Verification Steps** - After completing a task, provide detailed testing/verification steps to the user
 3. **Wait for Validation** - DO NOT proceed to the next task automatically
 4. **Wait for Explicit Instruction** - Only start the next task when the user explicitly confirms validation passed and instructs to continue
-5. **Update DEVELOPMENT_PLAN.md** - Mark completed tasks with ✅ and add detailed verification steps in the document
+5. **Update DEVELOPMENT_PLAN.md** - After completing each task, you MUST update the development plan document:
+   - Change task status from ⭐ to ✅ (e.g., `#### 1.3 数据库模块 ⭐⭐⭐ ✅`)
+   - Update `**状态**: 已完成`
+   - Add `**已实现功能**` section listing what was built
+   - Add detailed `**验证步骤**` with actual commands users can run
+   - Update `**文件清单**` with created/modified files and line counts
+   - Update any technology decisions (e.g., ORM choice, database type)
+   - Update the `**Current Status**` at line 159 to reflect latest completed task
+   - This documentation update is MANDATORY and part of task completion
 
 **Current Development Status**: Check `DEVELOPMENT_PLAN.md` for the latest completed tasks and next task to work on.
 
@@ -115,10 +123,10 @@ The `ConfigModule` is configured as **global** in `app.module.ts`, meaning all m
 | Framework | NestJS 11.x | Latest version |
 | Language | TypeScript 5.7+ | Strict mode enabled |
 | Validation | Zod 4.x | Preferred over Joi for type inference |
-| Logging | Pino (nestjs-pino) | Installed, pending full configuration |
+| Logging | Pino (nestjs-pino) | Fully configured with request logging |
 | Package Manager | pnpm | Enforced in this project |
-| ORM | **TBD** (Prisma vs TypeORM) | Decision pending |
-| Database | **TBD** (PostgreSQL vs MySQL) | Decision pending |
+| ORM | **Prisma 6.18.0** | Selected for type safety and DX |
+| Database | **PostgreSQL** | Production database |
 
 ### TypeScript Configuration
 
@@ -156,7 +164,7 @@ Refer to `DEVELOPMENT_PLAN.md` for detailed task breakdown. The project follows 
 6. **Phase 6**: DevOps (Docker, E2E tests, Git hooks)
 7. **Phase 7**: Documentation & Delivery
 
-**Current Status**: Phase 1.1 (Configuration Module) completed
+**Current Status**: Phase 1.3 (Database Module) completed
 
 ### Documentation Files
 

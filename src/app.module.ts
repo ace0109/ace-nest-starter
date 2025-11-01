@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import configurations from './config/configuration';
 import { validateEnv } from './config/env.validation';
 import { loggerConfig } from './common/logger';
+import { PrismaModule } from './common/prisma';
 
 @Module({
   imports: [
@@ -18,6 +19,8 @@ import { loggerConfig } from './common/logger';
     }),
     // 日志模块
     LoggerModule.forRoot(loggerConfig),
+    // 数据库模块
+    PrismaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
