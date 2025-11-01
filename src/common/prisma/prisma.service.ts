@@ -66,7 +66,11 @@ export class PrismaService
     await Promise.all(
       models.map((modelKey) => {
         const model = this[modelKey as keyof typeof this];
-        if (typeof model === 'object' && model !== null && 'deleteMany' in model) {
+        if (
+          typeof model === 'object' &&
+          model !== null &&
+          'deleteMany' in model
+        ) {
           return (model as { deleteMany: () => Promise<unknown> }).deleteMany();
         }
         return Promise.resolve();

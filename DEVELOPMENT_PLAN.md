@@ -2,6 +2,8 @@
 
 > 基于需求讨论的开发路线图和任务分解
 
+**Current Status**: Phase 1.4 (Error Handling Module) completed ✅
+
 ---
 
 ## 🎯 项目目标
@@ -306,26 +308,114 @@
 
 ---
 
-#### 1.4 统一异常处理 ⭐⭐⭐
+#### 1.4 统一异常处理 ⭐⭐⭐ ✅
 **优先级**: P0 (必须)
+**状态**: 已完成
 
 **实现内容**:
-- [ ] 定义统一响应格式
+- [x] 定义统一响应格式
   - 成功: `{ success, code, message, data, timestamp, traceId, extend? }`
   - 失败: `{ success, code, message, statusCode, timestamp, traceId, path, errors? }`
-- [ ] 设计业务错误码 (混合方式: HTTP + 业务码)
-- [ ] 创建异常类层级
+- [x] 设计业务错误码 (混合方式: HTTP + 业务码)
+- [x] 创建异常类层级
   - `BusinessException` 基类
   - 具体业务异常类
-- [ ] 实现全局异常过滤器
+- [x] 实现全局异常过滤器
   - HTTP异常处理
   - 数据库异常处理
   - 系统异常处理
 
+**已实现功能**:
+- ✅ 错误代码常量定义 (5大类: 系统/认证/用户/业务/第三方)
+- ✅ BusinessException 业务异常类 (带静态工厂方法)
+- ✅ 全局异常过滤器 (GlobalExceptionFilter)
+- ✅ 统一响应格式拦截器 (ResponseTransformInterceptor)
+- ✅ 分页响应格式支持
+- ✅ Prisma 数据库错误友好提示
+- ✅ 错误日志分级记录 (error/warn/info)
+- ✅ 开发环境包含堆栈信息
+- ✅ 测试端点验证各类异常
+- ✅ 单元测试覆盖
+
+**验证步骤**:
+
+1. 启动应用:
+   ```bash
+   pnpm start:dev
+   ```
+
+2. 测试成功响应:
+   ```bash
+   # 标准成功响应
+   curl http://localhost:3000/test/success
+   ```
+   预期响应格式:
+   ```json
+   {
+     "success": true,
+     "code": 200,
+     "message": "Success",
+     "data": {...},
+     "timestamp": 1234567890,
+     "traceId": "xxx"
+   }
+   ```
+
+3. 测试业务异常:
+   ```bash
+   # 资源未找到
+   curl http://localhost:3000/test/business-error
+
+   # 验证错误
+   curl http://localhost:3000/test/validation-error
+
+   # 未授权
+   curl http://localhost:3000/test/unauthorized
+
+   # 禁止访问
+   curl http://localhost:3000/test/forbidden
+
+   # 重复资源
+   curl http://localhost:3000/test/duplicate
+   ```
+   预期: 每个请求返回对应的错误代码和消息
+
+4. 测试 NestJS 验证管道错误:
+   ```bash
+   # 传入非数字参数
+   curl http://localhost:3000/test/nest-error/abc
+   ```
+   预期: 返回验证错误 (code: 40000)
+
+5. 测试系统错误:
+   ```bash
+   curl http://localhost:3000/test/system-error
+   curl http://localhost:3000/test/unhandled-error
+   ```
+   预期: 返回系统错误 (code: 10000)，开发环境显示堆栈
+
+6. 运行单元测试:
+   ```bash
+   pnpm test src/common/exceptions/business.exception.spec.ts
+   ```
+   预期: 所有测试通过
+
+**文件清单**:
+- `src/common/constants/error-codes.ts` (234行) - 错误代码和消息定义
+- `src/common/exceptions/business.exception.ts` (177行) - 业务异常类
+- `src/common/exceptions/business.exception.spec.ts` (156行) - 单元测试
+- `src/common/filters/global-exception.filter.ts` (241行) - 全局异常过滤器
+- `src/common/interceptors/response-transform.interceptor.ts` (113行) - 响应转换拦截器
+- `src/common/index.ts` (11行) - 导出文件
+- `src/main.ts` (更新: 注册全局过滤器和拦截器)
+- `src/app.controller.ts` (更新: 添加测试端点)
+
 **验收标准**:
-- 所有异常返回统一格式
-- 错误信息准确清晰
-- 包含 traceId 便于追踪
+- ✅ 所有异常返回统一格式
+- ✅ 错误信息准确清晰
+- ✅ 包含 traceId 便于追踪
+- ✅ TypeScript 编译 0 错误
+- ✅ 单元测试全部通过
 
 ---
 

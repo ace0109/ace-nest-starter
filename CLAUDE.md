@@ -22,26 +22,48 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. **Provide Verification Steps** - After completing a task, provide detailed testing/verification steps to the user
 3. **Wait for Validation** - DO NOT proceed to the next task automatically
 4. **Wait for Explicit Instruction** - Only start the next task when the user explicitly confirms validation passed and instructs to continue
-5. **Update DEVELOPMENT_PLAN.md** - After completing each task, you MUST update the development plan document:
+5. **Code Quality Check (MANDATORY)** - Before marking any task as complete:
+   - Run `pnpm lint` and fix ALL errors
+   - Run `pnpm build` to verify TypeScript compilation
+   - Run tests if applicable (`pnpm test`)
+   - Code MUST have 0 ESLint errors and 0 TypeScript errors
+6. **Update DEVELOPMENT_PLAN.md** - After completing each task, you MUST update the development plan document:
    - Change task status from ⭐ to ✅ (e.g., `#### 1.3 数据库模块 ⭐⭐⭐ ✅`)
    - Update `**状态**: 已完成`
    - Add `**已实现功能**` section listing what was built
    - Add detailed `**验证步骤**` with actual commands users can run
    - Update `**文件清单**` with created/modified files and line counts
    - Update any technology decisions (e.g., ORM choice, database type)
-   - Update the `**Current Status**` at line 159 to reflect latest completed task
+   - Update the `**Current Status**` to reflect latest completed task
    - This documentation update is MANDATORY and part of task completion
 
 **Current Development Status**: Check `DEVELOPMENT_PLAN.md` for the latest completed tasks and next task to work on.
 
 ## Code Quality Standards
 
-**TypeScript Type Safety**:
+### ESLint Compliance (CRITICAL - MUST FOLLOW)
+**⚠️ IMPORTANT**: After completing ANY code changes, you MUST:
+1. **Run `pnpm lint`** - Check for ESLint errors
+2. **Fix ALL ESLint errors** - No exceptions, code must have 0 ESLint errors
+3. **Verify TypeScript compilation** - Run `pnpm build` to ensure 0 TypeScript errors
+4. **Never commit code with linting errors** - This is a hard requirement
+
+**Common ESLint Rules to Watch**:
+- ✅ No unused variables or imports
+- ✅ Proper type annotations (avoid `any`)
+- ✅ Consistent formatting (handled by Prettier)
+- ✅ Safe type operations (no unsafe member access)
+- ✅ Proper async/await usage
+- ✅ Exhaustive switch statements
+- ✅ No floating promises
+
+### TypeScript Type Safety
 - ❌ **NEVER use `any` type** - Always use proper TypeScript types
 - ✅ Define explicit interfaces/types for function parameters and return values
 - ✅ Use type inference when types are obvious
 - ✅ For third-party library types, import proper type definitions
 - ✅ Use `unknown` instead of `any` when type is truly unknown, then narrow it with type guards
+- ✅ If you MUST use `any` (rare cases), add ESLint disable comment with justification
 
 ## Development Commands
 
@@ -213,3 +235,28 @@ Special: `*:*` for admin, `resource:*` for all actions on resource
 - **Type safety first** - Use Zod's type inference, avoid manual type definitions
 - **Configuration centralization** - All env vars go through validation
 - **Production-ready mindset** - Strict validation and security checks in prod mode
+
+## Code Quality Checklist (Run Before Task Completion)
+
+**EVERY task must pass this checklist before being marked as complete:**
+
+```bash
+# 1. Lint Check (MUST PASS - 0 errors)
+pnpm lint
+
+# 2. TypeScript Compilation (MUST PASS - 0 errors)
+pnpm build
+
+# 3. Unit Tests (if applicable)
+pnpm test
+
+# 4. Start Application (verify it runs without errors)
+pnpm start:dev
+```
+
+**If ANY of these checks fail, you MUST:**
+1. Fix the issues immediately
+2. Re-run all checks until they pass
+3. Never proceed with errors or warnings
+
+**Remember**: Clean code is not optional - it's a requirement!
