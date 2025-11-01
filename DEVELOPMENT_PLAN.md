@@ -2,7 +2,7 @@
 
 > 基于需求讨论的开发路线图和任务分解
 
-**Current Status**: Phase 1.4 (Error Handling Module) completed ✅
+**Current Status**: Phase 1.5 (Response Interceptor) completed ✅
 
 ---
 
@@ -419,18 +419,76 @@
 
 ---
 
-#### 1.5 统一响应拦截器 ⭐⭐
+#### 1.5 统一响应拦截器 ⭐⭐ ✅
 **优先级**: P0 (必须)
+**状态**: 已完成
 
 **实现内容**:
-- [ ] 创建 TraceID 中间件 (UUID)
-- [ ] 实现响应转换拦截器
-- [ ] 集成 TraceID 到响应体
+- [x] 创建 TraceID 中间件 (UUID)
+- [x] 实现响应转换拦截器
+- [x] 集成 TraceID 到响应体
+
+**已实现功能**:
+- ✅ TraceID 中间件 (支持分布式追踪)
+- ✅ 响应转换拦截器 (ResponseTransformInterceptor)
+- ✅ 统一成功响应格式
+- ✅ 分页响应支持
+- ✅ TraceID 从请求头获取 (X-Trace-Id/X-Request-Id)
+- ✅ TraceID 添加到响应头
+- ✅ 与 Pino logger ID 集成
+- ✅ getTraceId 辅助函数
+
+**验证步骤**:
+
+1. 启动应用:
+   ```bash
+   pnpm start:dev
+   ```
+
+2. 测试默认 TraceID 生成:
+   ```bash
+   curl -I http://localhost:3000/test/success
+   ```
+   预期: 响应头包含 `X-Trace-Id: <uuid>`
+
+3. 测试自定义 TraceID:
+   ```bash
+   curl -H "X-Trace-Id: custom-trace-123" -s http://localhost:3000/test/success
+   ```
+   预期响应:
+   ```json
+   {
+     "success": true,
+     "traceId": "custom-trace-123",
+     ...
+   }
+   ```
+
+4. 测试分布式追踪 (X-Request-Id):
+   ```bash
+   curl -H "X-Request-Id: request-456" -s http://localhost:3000/test/success
+   ```
+   预期: traceId 使用 "request-456"
+
+5. 测试错误响应中的 TraceID:
+   ```bash
+   curl -s http://localhost:3000/test/business-error
+   ```
+   预期: 错误响应也包含 traceId
+
+**文件清单**:
+- `src/common/middleware/trace-id.middleware.ts` (59行) - TraceID 中间件
+- `src/common/middleware/index.ts` (1行) - 导出文件
+- `src/app.module.ts` (更新: 配置中间件)
+- `src/common/interceptors/response-transform.interceptor.ts` (更新: 使用 getTraceId)
+- `src/common/filters/global-exception.filter.ts` (更新: 使用 getTraceId)
 
 **验收标准**:
-- 所有成功响应格式统一
-- 响应包含 traceId
-- 支持可选扩展字段
+- ✅ 所有成功响应格式统一
+- ✅ 响应包含 traceId
+- ✅ 支持分布式追踪
+- ✅ ESLint 0 错误
+- ✅ TypeScript 0 错误
 
 ---
 
@@ -438,8 +496,8 @@
 - ✅ 配置管理系统
 - ✅ 完善的日志系统
 - ✅ 数据库基础设施 (Prisma + PostgreSQL)
-- ⏳ 统一的错误处理
-- ⏳ 统一的响应格式
+- ✅ 统一的错误处理
+- ✅ 统一的响应格式
 
 ---
 

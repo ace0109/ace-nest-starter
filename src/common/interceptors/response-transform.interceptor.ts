@@ -7,11 +7,7 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Request } from 'express';
-
-// 扩展 Request 接口以包含 id 属性
-interface RequestWithTraceId extends Request {
-  id: string;
-}
+import { getTraceId } from '../middleware';
 
 /**
  * 统一成功响应格式
@@ -40,7 +36,7 @@ export class ResponseTransformInterceptor<T = unknown>
     next: CallHandler<T>,
   ): Observable<SuccessResponse<T>> {
     const request = context.switchToHttp().getRequest<Request>();
-    const traceId = (request as RequestWithTraceId).id ?? 'unknown';
+    const traceId = getTraceId(request);
 
     return next.handle().pipe(
       map((data) => {

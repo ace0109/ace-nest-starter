@@ -9,11 +9,7 @@ import { Request, Response } from 'express';
 import { PinoLogger } from 'nestjs-pino';
 import { ErrorCode, ErrorCodeType } from '../constants/error-codes';
 import { BusinessException } from '../exceptions/business.exception';
-
-// 扩展 Request 接口以包含 id 属性
-interface RequestWithTraceId extends Request {
-  id: string;
-}
+import { getTraceId } from '../middleware';
 
 /**
  * 统一错误响应格式
@@ -61,8 +57,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    // 获取 traceId（从 pino logger 的 request 对象中获取）
-    const traceId = (request as RequestWithTraceId).id ?? 'unknown';
+    // 获取 traceId
+    const traceId = getTraceId(request);
 
     let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
     let errorCode: ErrorCodeType = ErrorCode.INTERNAL_SERVER_ERROR;

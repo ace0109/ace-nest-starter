@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 import { APP_FILTER } from '@nestjs/core';
@@ -9,6 +9,7 @@ import { validateEnv } from './config/env.validation';
 import { loggerConfig } from './common/logger';
 import { PrismaModule } from './common/prisma';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { TraceIdMiddleware } from './common/middleware';
 
 @Module({
   imports: [
@@ -34,4 +35,9 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    // 全局应用 TraceID 中间件
+    consumer.apply(TraceIdMiddleware).forRoutes('*');
+  }
+}
