@@ -153,4 +153,14 @@ export class BusinessException extends HttpException {
       : 'Database operation failed';
     return new BusinessException(ErrorCode.DATABASE_ERROR, message, details);
   }
+
+  /**
+   * 创建请求参数错误异常
+   */
+  static badRequest(
+    message = '请求参数错误',
+    details?: unknown,
+  ): BusinessException {
+    return new BusinessException(ErrorCode.VALIDATION_ERROR, message, details);
+  }
 }

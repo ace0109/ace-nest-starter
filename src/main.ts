@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -36,6 +37,56 @@ async function bootstrap() {
   // 配置全局响应转换拦截器
   app.useGlobalInterceptors(new ResponseTransformInterceptor());
 
+  // 配置 CORS
+  const corsOrigins = configService.get<string[]>('app.corsOrigins', ['*']);
+  app.enableCors({
+    origin: env === 'production' ? corsOrigins : true,
+    credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders:
+      'Content-Type, Accept, Authorization, X-Trace-Id, X-Request-Id',
+  });
+
+  // 配置 Swagger
+  if (env !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('ACE NestJS Starter API')
+      .setDescription(
+        'ACE NestJS Starter - Production-ready NestJS scaffolding',
+      )
+      .setVersion('1.0.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'JWT',
+          description: 'Enter JWT token',
+          in: 'header',
+        },
+        'JWT-auth',
+      )
+      .addTag('auth', 'Authentication endpoints')
+      .addTag('users', 'User management endpoints')
+      .addTag('roles', 'Role management endpoints')
+      .addTag('permissions', 'Permission management endpoints')
+      .build();
+
+    const document = SwaggerModule.createDocument(app, config);
+
+    // 自定义 Swagger UI 选项
+    SwaggerModule.setup('api', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true, // 保持授权状态
+        tagsSorter: 'alpha', // 按字母顺序排序标签
+        operationsSorter: 'alpha', // 按字母顺序排序操作
+      },
+      customSiteTitle: 'ACE NestJS API Docs',
+      customCssUrl: undefined,
+      customJs: undefined,
+    });
+  }
+
   // 监听 0.0.0.0 以便外部访问
   await app.listen(port, '0.0.0.0');
 
@@ -46,6 +97,9 @@ async function bootstrap() {
   console.log(`📍 Environment: ${env}`);
   console.log(`🌐 Local:       http://localhost:${port}`);
   console.log(`🌐 Network:     http://0.0.0.0:${port}`);
+  if (env !== 'production') {
+    console.log(`📚 Swagger:     http://localhost:${port}/api`);
+  }
   console.log('');
 }
 

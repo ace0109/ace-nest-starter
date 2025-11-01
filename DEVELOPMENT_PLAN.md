@@ -2,7 +2,7 @@
 
 > 基于需求讨论的开发路线图和任务分解
 
-**Current Status**: Phase 2.1 (User Module) completed ✅
+**Current Status**: Phase 3 (API Documentation & Validation) completed ✅
 
 ---
 
@@ -563,42 +563,163 @@ curl -X POST "http://localhost:3000/users/{userId}/restore"
 
 ---
 
-#### 2.2 JWT 认证模块 ⭐⭐⭐
+#### 2.2 JWT 认证模块 ⭐⭐⭐ ✅
 **优先级**: P0 (必须)
+**状态**: 已完成
 
-**实现内容**:
-- [ ] 安装依赖: `@nestjs/passport`, `@nestjs/jwt`, `passport-jwt`
-- [ ] 配置 JWT (Access + Refresh Token)
-- [ ] 实现登录接口
-- [ ] 实现刷新令牌接口
-- [ ] 实现登出接口 (Token黑名单)
-- [ ] 创建 JWT 守卫
+**已实现功能**:
+- ✅ 安装依赖: `@nestjs/passport`, `@nestjs/jwt`, `passport-jwt`, `passport-local`
+- ✅ 配置 JWT (Access + Refresh Token)
+- ✅ 实现登录接口 (/auth/login)
+- ✅ 实现刷新令牌接口 (/auth/refresh)
+- ✅ 实现登出接口 (/auth/logout)
+- ✅ 创建 JWT 守卫
+- ✅ LocalStrategy 本地认证策略
+- ✅ JwtStrategy 访问令牌验证策略
+- ✅ RefreshJwtStrategy 刷新令牌验证策略
+
+**验证步骤**:
+```bash
+# 1. 用户登录
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "password": "admin123456"}'
+
+# 2. 刷新令牌
+curl -X POST http://localhost:3000/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken": "your-refresh-token"}'
+
+# 3. 注册新用户
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "username": "testuser",
+    "password": "Password123",
+    "nickname": "Test User"
+  }'
+```
+
+**文件清单**:
+- `src/modules/auth/auth.module.ts` (32行)
+- `src/modules/auth/auth.service.ts` (254行)
+- `src/modules/auth/auth.controller.ts` (87行)
+- `src/modules/auth/strategies/jwt.strategy.ts` (35行)
+- `src/modules/auth/strategies/refresh-jwt.strategy.ts` (38行)
+- `src/modules/auth/strategies/local.strategy.ts` (20行)
+- `src/modules/auth/guards/jwt-auth.guard.ts` (5行)
+- `src/modules/auth/guards/local-auth.guard.ts` (5行)
+- `src/modules/auth/guards/refresh-jwt-auth.guard.ts` (5行)
+- `src/modules/auth/dto/login.dto.ts` (11行)
+- `src/modules/auth/dto/register.dto.ts` (35行)
+- `src/modules/auth/dto/refresh-token.dto.ts` (7行)
 
 ---
 
-#### 2.3 角色权限模块 ⭐⭐⭐
+#### 2.3 角色权限模块 ⭐⭐⭐ ✅
 **优先级**: P0 (必须)
+**状态**: 已完成
 
-**实现内容**:
-- [ ] 创建 Role Entity
-- [ ] 创建 Permission Entity
-- [ ] 建立关系: User-Role-Permission
-- [ ] 初始化预设角色和权限
-- [ ] 实现角色管理 CRUD
-- [ ] 实现权限管理 CRUD
+**已实现功能**:
+- ✅ 创建 Role Entity (已在数据库模块完成)
+- ✅ 创建 Permission Entity (已在数据库模块完成)
+- ✅ 建立关系: User-Role-Permission (已在数据库模块完成)
+- ✅ 初始化预设角色和权限 (已通过 Seed 完成)
+- ✅ 实现角色管理 CRUD
+- ✅ 实现权限管理 CRUD
+- ✅ 角色分配权限功能
+- ✅ 用户分配角色功能
+
+**验证步骤**:
+```bash
+# 1. 获取角色列表
+curl -X GET http://localhost:3000/roles \
+  -H "Authorization: Bearer <token>"
+
+# 2. 获取权限列表
+curl -X GET http://localhost:3000/permissions \
+  -H "Authorization: Bearer <token>"
+
+# 3. 创建新角色
+curl -X POST http://localhost:3000/roles \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Editor", "code": "editor", "description": "编辑员"}'
+
+# 4. 分配权限给角色
+curl -X POST http://localhost:3000/roles/{roleId}/permissions \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"permissionIds": ["permission-uuid-1", "permission-uuid-2"]}'
+```
+
+**文件清单**:
+- `src/modules/roles/roles.module.ts` (12行)
+- `src/modules/roles/roles.service.ts` (312行)
+- `src/modules/roles/roles.controller.ts` (116行)
+- `src/modules/roles/dto/create-role.dto.ts` (29行)
+- `src/modules/roles/dto/update-role.dto.ts` (10行)
+- `src/modules/roles/dto/assign-permissions.dto.ts` (7行)
+- `src/modules/permissions/permissions.module.ts` (12行)
+- `src/modules/permissions/permissions.service.ts` (236行)
+- `src/modules/permissions/permissions.controller.ts` (116行)
+- `src/modules/permissions/dto/create-permission.dto.ts` (34行)
+- `src/modules/permissions/dto/update-permission.dto.ts` (4行)
 
 ---
 
-#### 2.4 权限守卫和装饰器 ⭐⭐⭐
+#### 2.4 权限守卫和装饰器 ⭐⭐⭐ ✅
 **优先级**: P0 (必须)
+**状态**: 已完成
 
-**实现内容**:
-- [ ] 创建 `@Roles()` 装饰器
-- [ ] 创建 `@Permission()` 装饰器
-- [ ] 创建 `@Resource()` 装饰器 (资源所有权)
-- [ ] 实现 RolesGuard
-- [ ] 实现 PermissionGuard
-- [ ] 实现 ResourceGuard
+**已实现功能**:
+- ✅ 创建 `@Roles()` 装饰器
+- ✅ 创建 `@Permission()` 装饰器
+- ✅ 创建 `@Permissions()` 装饰器 (多个权限)
+- ✅ 创建 `@Public()` 装饰器 (公开接口)
+- ✅ 创建 `@Resource()` 装饰器 (资源所有权)
+- ✅ 创建 `@CurrentUser()` 装饰器 (获取当前用户)
+- ✅ 创建 `@CurrentUserId()` 装饰器 (获取用户ID)
+- ✅ 实现 JwtAuthGuard (全局JWT认证守卫)
+- ✅ 实现 RolesGuard (角色守卫)
+- ✅ 实现 PermissionGuard (权限守卫)
+- ✅ 实现 ResourceGuard (资源所有权守卫)
+
+**使用示例**:
+```typescript
+// 公开接口 - 不需要认证
+@Public()
+@Get('public')
+getPublic() {}
+
+// 需要特定角色
+@Roles('admin', 'editor')
+@Get('admin-only')
+getAdminOnly() {}
+
+// 需要特定权限
+@Permission('user:create')
+@Post('users')
+createUser() {}
+
+// 获取当前用户
+@Get('profile')
+getProfile(@CurrentUser() user: any) {}
+
+// 资源所有权检查
+@Resource('post', { ownerField: 'authorId' })
+@Delete('posts/:id')
+deletePost() {}
+```
+
+**文件清单**:
+- `src/common/decorators/auth.decorators.ts` (28行)
+- `src/common/decorators/user.decorators.ts` (17行)
+- `src/common/guards/jwt-auth.guard.ts` (27行)
+- `src/common/guards/roles.guard.ts` (44行)
+- `src/common/guards/permission.guard.ts` (60行)
+- `src/common/guards/resource.guard.ts` (65行)
 
 ---
 
@@ -617,37 +738,125 @@ curl -X POST "http://localhost:3000/users/{userId}/restore"
 
 ### 任务清单
 
-#### 3.1 Swagger 文档集成 ⭐⭐⭐
+#### 3.1 Swagger 文档集成 ⭐⭐⭐ ✅
 **优先级**: P0 (必须)
+**状态**: 已完成
 
-**实现内容**:
-- [ ] 安装 `@nestjs/swagger`
-- [ ] 配置 Swagger
-- [ ] 添加 JWT 认证支持
-- [ ] 为所有 DTO 添加装饰器
-- [ ] 添加请求/响应示例
-- [ ] 整理错误码文档
+**已实现功能**:
+- ✅ 安装 `@nestjs/swagger` 和 `swagger-ui-express`
+- ✅ 配置 Swagger (非生产环境)
+- ✅ 添加 JWT Bearer 认证支持
+- ✅ 为所有控制器添加 ApiTags
+- ✅ 为所有 DTO 添加 ApiProperty 装饰器
+- ✅ 添加请求/响应示例
+- ✅ 自定义 Swagger UI 选项 (持久化授权、排序等)
+- ✅ 启动信息中显示 Swagger 地址
+
+**验证步骤**:
+```bash
+# 1. 启动开发服务器
+pnpm start:dev
+
+# 2. 访问 Swagger UI
+# 打开浏览器访问: http://localhost:3000/api
+
+# 3. 测试 JWT 认证
+# - 点击 Authorize 按钮
+# - 输入 JWT token
+# - 测试需要认证的接口
+
+# 4. 查看 API 文档
+# - 查看所有端点的详细描述
+# - 查看请求/响应格式
+# - 查看示例数据
+```
+
+**文件清单**:
+- `src/main.ts` (更新: 添加 Swagger 配置)
+- 所有控制器文件 (更新: 添加 Swagger 装饰器)
+- 所有 DTO 文件 (更新: 添加 ApiProperty 装饰器)
 
 ---
 
-#### 3.2 全局数据验证管道 ⭐⭐⭐
+#### 3.2 全局数据验证管道 ⭐⭐⭐ ✅
 **优先级**: P0 (必须)
+**状态**: 已完成
 
-**实现内容**:
-- [ ] 配置全局 ValidationPipe
-- [ ] 创建常用验证 DTO
-- [ ] 自定义验证装饰器
-- [ ] 验证错误国际化 (可选)
+**已实现功能**:
+- ✅ 配置全局 ValidationPipe (在 main.ts)
+- ✅ 启用 whitelist (自动删除未声明属性)
+- ✅ 启用 transform (自动类型转换)
+- ✅ 启用 forbidNonWhitelisted (禁止非白名单属性)
+- ✅ 配置 transformOptions (启用隐式转换)
+- ✅ 所有 DTO 使用 class-validator 装饰器
+- ✅ 自定义验证错误消息
+
+**验证步骤**:
+```bash
+# 1. 测试验证失败情况
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "invalid-email"}'
+
+# 预期: 返回 400 错误，包含验证错误详情
+
+# 2. 测试额外字段被移除
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com", "password": "Test123", "extraField": "should-be-removed"}'
+
+# 预期: extraField 被自动移除，不会传递给服务
+```
+
+**文件清单**:
+- `src/main.ts` (更新: 配置 ValidationPipe)
+- 所有 DTO 文件 (已使用 class-validator)
 
 ---
 
-#### 3.3 CORS 跨域配置 ⭐⭐
+#### 3.3 CORS 跨域配置 ⭐⭐ ✅
 **优先级**: P0 (必须)
+**状态**: 已完成
 
-**实现内容**:
-- [ ] 开发环境全开放
-- [ ] 生产环境白名单配置
-- [ ] 通过环境变量配置
+**已实现功能**:
+- ✅ 配置 CORS (在 main.ts)
+- ✅ 开发环境全开放 (origin: true)
+- ✅ 生产环境白名单配置 (从配置读取 corsOrigins)
+- ✅ 通过环境变量配置 CORS_ORIGINS
+- ✅ 启用 credentials
+- ✅ 配置允许的方法和请求头
+
+**验证步骤**:
+```bash
+# 1. 测试跨域请求 (开发环境)
+# 从不同域发起请求，应该成功
+
+# 2. 检查响应头
+curl -I http://localhost:3000/api
+# 预期: 看到 CORS 相关响应头
+
+# 3. 测试预检请求
+curl -X OPTIONS http://localhost:3000/api \
+  -H "Origin: http://example.com" \
+  -H "Access-Control-Request-Method: POST" \
+  -H "Access-Control-Request-Headers: Authorization"
+
+# 预期: 返回 204 状态码，包含 CORS 响应头
+```
+
+**文件清单**:
+- `src/main.ts` (更新: 添加 CORS 配置)
+- `src/config/configuration.ts` (包含 CORS 配置)
+- `.env.example` (包含 CORS_ORIGINS 示例)
+
+### 阶段交付物
+- ✅ Swagger API 文档系统
+- ✅ JWT Bearer 认证集成
+- ✅ 全局数据验证管道
+- ✅ CORS 跨域配置
+- ✅ 所有 API 端点文档化
+- ✅ ESLint 0 错误
+- ✅ TypeScript 编译通过
 
 ---
 

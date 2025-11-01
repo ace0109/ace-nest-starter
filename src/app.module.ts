@@ -1,7 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import configurations from './config/configuration';
@@ -11,6 +11,10 @@ import { PrismaModule } from './common/prisma';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { TraceIdMiddleware } from './common/middleware';
 import { UsersModule } from './modules/users';
+import { AuthModule } from './modules/auth';
+import { RolesModule } from './modules/roles';
+import { PermissionsModule } from './modules/permissions';
+import { JwtAuthGuard } from './common/guards';
 
 @Module({
   imports: [
@@ -27,6 +31,9 @@ import { UsersModule } from './modules/users';
     PrismaModule,
     // 业务模块
     UsersModule,
+    AuthModule,
+    RolesModule,
+    PermissionsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -35,6 +42,11 @@ import { UsersModule } from './modules/users';
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
+    },
+    // 全局JWT认证守卫
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
     },
   ],
 })
