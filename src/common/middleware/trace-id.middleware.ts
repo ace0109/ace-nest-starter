@@ -27,8 +27,7 @@ export class TraceIdMiddleware implements NestMiddleware {
       req.headers['x-trace-id'] || req.headers['x-request-id'];
 
     // 获取 Pino 生成的 ID（如果有）
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const pinoId = (req as any).id as string | undefined;
+    const pinoId = req.id as string | undefined;
     const traceId = headerTraceId || pinoId || uuidv4();
 
     // 将 TraceID 添加到请求对象
@@ -36,8 +35,7 @@ export class TraceIdMiddleware implements NestMiddleware {
 
     // 如果 Pino 没有生成 ID，手动设置（保持一致性）
     if (!pinoId) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      (req as any).id = req.traceId;
+      req.id = req.traceId;
     }
 
     // 将 TraceID 添加到响应头（方便调试和追踪）
@@ -54,7 +52,6 @@ export class TraceIdMiddleware implements NestMiddleware {
  */
 export function getTraceId(req: Request): string {
   const extReq = req as ExtendedRequest;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  const pinoId = (req as any).id as string | undefined;
+  const pinoId = req.id as string | undefined;
   return extReq.traceId || pinoId || 'unknown';
 }
