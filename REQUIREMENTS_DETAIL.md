@@ -69,30 +69,72 @@ export default registerAs('database', () => ({
 }));
 ```
 
-#### 验证Schema
+#### 验证Schema (使用 Zod)
 ```typescript
-import * as Joi from 'joi';
+import { z } from 'zod';
 
-export const validationSchema = Joi.object({
-  NODE_ENV: Joi.string()
-    .valid('development', 'production', 'test')
-    .default('development'),
-  PORT: Joi.number().default(3000),
+// Zod Schema 定义 - TypeScript-first，Schema 即类型
+export const envSchema = z.object({
+  // 应用配置
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  PORT: z.coerce.number().default(3000),
 
-  // 数据库 - 生产环境必填
-  DB_TYPE: Joi.string().when('NODE_ENV', {
-    is: 'production',
-    then: Joi.required(),
-    otherwise: Joi.optional(),
-  }),
-  DB_HOST: Joi.string().when('NODE_ENV', {
-    is: 'production',
-    then: Joi.required(),
-    otherwise: Joi.optional().default('localhost'),
-  }),
-  // ... 其他配置
+  // 数据库配置
+  DATABASE_URL: z.string().url().min(1),
+
+  // JWT 配置
+  JWT_ACCESS_SECRET: z.string().min(32),
+  JWT_ACCESS_EXPIRES_IN: z.string().default('2h'),
+  JWT_REFRESH_SECRET: z.string().min(32),
+  JWT_REFRESH_EXPIRES_IN: z.string().default('30d'),
+
+  // Redis 配置
+  REDIS_HOST: z.string().default('localhost'),
+  REDIS_PORT: z.coerce.number().default(6379),
+  REDIS_PASSWORD: z.string().optional(),
+  REDIS_DB: z.coerce.number().default(0),
 });
+
+// 自动推断类型 - 无需手动定义 interface
+export type Env = z.infer<typeof envSchema>;
+
+// 验证函数
+export function validateEnv(config: Record<string, unknown>): Env {
+  try {
+    return envSchema.parse(config);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const messages = error.errors.map(
+        (err) => `${err.path.join('.')}: ${err.message}`,
+      );
+      throw new Error(`Environment validation failed:\n${messages.join('\n')}`);
+    }
+    throw error;
+  }
+}
+
+// 分环境验证 - 生产环境更严格
+export function createEnvSchema(env: string) {
+  const baseSchema = envSchema;
+
+  if (env === 'production') {
+    // 生产环境额外验证
+    return baseSchema.refine(
+      (data) => data.JWT_ACCESS_SECRET.length >= 64,
+      { message: 'Production JWT secret must be at least 64 characters' }
+    );
+  }
+
+  return baseSchema;
+}
 ```
+
+**Zod vs Joi 对比**:
+- ✅ **类型安全**: Zod 自动推断类型，Schema 即类型定义
+- ✅ **性能更好**: Zod 性能优于 Joi，包体积更小 (57KB vs 146KB)
+- ✅ **TypeScript-first**: 与 Prisma 完美配合，都是现代化 TS 工具
+- ✅ **开发体验**: IDE 智能提示完美，无需手动同步类型
+- ✅ **现代化**: T3 Stack、Cal.com 等知名项目使用
 
 ---
 

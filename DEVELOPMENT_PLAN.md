@@ -43,24 +43,90 @@
 
 ### 任务清单
 
-#### 1.1 配置管理模块 ⭐⭐⭐
+#### 1.1 配置管理模块 ⭐⭐⭐ ✅
 **优先级**: P0 (必须)
+**状态**: 已完成
 
 **实现内容**:
-- [ ] 安装依赖: `@nestjs/config`, `joi`
-- [ ] 创建配置文件结构 (按模块分离)
-  - `src/config/modules/database.config.ts`
-  - `src/config/modules/redis.config.ts`
-  - `src/config/modules/jwt.config.ts`
-  - `src/config/modules/app.config.ts`
-- [ ] 实现环境变量验证 (Joi Schema)
-- [ ] 分环境验证策略 (dev宽松, prod严格)
-- [ ] 创建 `.env.example` 模板
+- [x] 安装依赖: `@nestjs/config`, `zod` (使用 Zod 替代 Joi)
+- [x] 创建配置文件结构 (按模块分离)
+  - `src/config/configuration.ts` (所有配置模块)
+  - `src/config/env.validation.ts` (环境变量验证)
+  - `src/config/index.ts` (统一导出)
+- [x] 实现环境变量验证 (Zod Schema)
+- [x] 分环境验证策略 (dev宽松, prod严格)
+- [x] 创建 `.env.example` 模板
+
+**已实现功能**:
+- ✅ App 配置 (端口、环境、CORS)
+- ✅ 数据库配置 (DATABASE_URL)
+- ✅ JWT 配置 (Access + Refresh Token)
+- ✅ Redis 配置 (主机、端口、密码、DB)
+- ✅ SMTP 邮件配置 (可选)
+- ✅ 日志配置 (日志级别)
+- ✅ OAuth 配置 (Google, GitHub, 微信)
+- ✅ Zod 类型安全验证
+- ✅ 生产环境增强验证 (64位密钥)
+- ✅ 完善的错误提示
+
+**验证步骤**:
+1. 检查配置文件是否存在:
+   ```bash
+   ls -la src/config/
+   # 应该看到: configuration.ts, env.validation.ts, index.ts
+   ```
+
+2. 测试环境变量验证 (缺失必填字段):
+   ```bash
+   # 删除或重命名 .env 文件
+   mv .env .env.backup
+
+   # 启动项目
+   pnpm start:dev
+
+   # 预期: 应该显示验证错误提示，指出缺失的必填字段
+   ```
+
+3. 测试开发环境默认值:
+   ```bash
+   # 创建一个最小的 .env 文件
+   echo "NODE_ENV=development" > .env
+
+   # 启动项目
+   pnpm start:dev
+
+   # 预期: 应该显示警告但使用默认值继续启动
+   ```
+
+4. 测试配置加载:
+   ```bash
+   # 恢复 .env 文件
+   mv .env.backup .env
+
+   # 启动项目
+   pnpm start:dev
+
+   # 预期: 项目正常启动，在 http://localhost:3000
+   # 访问: http://localhost:3000
+   # 应该看到: Hello World!
+   ```
+
+5. 检查 Swagger 文档中的配置类型:
+   ```bash
+   # 启动后访问 (如果已配置 Swagger)
+   # http://localhost:3000/api
+   ```
+
+**文件清单**:
+- `src/config/configuration.ts` (152行)
+- `src/config/env.validation.ts` (182行)
+- `src/config/index.ts` (6行)
+- `.env.example` (52行)
 
 **验收标准**:
-- 能正确加载不同环境配置
-- 缺少必填配置时生产环境启动失败
-- 开发环境缺少配置时显示警告
+- ✅ 能正确加载不同环境配置
+- ✅ 缺少必填配置时生产环境启动失败
+- ✅ 开发环境缺少配置时显示警告并使用默认值
 
 ---
 
