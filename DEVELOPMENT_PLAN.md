@@ -2,7 +2,7 @@
 
 > 基于需求讨论的开发路线图和任务分解
 
-**Current Status**: Phase 4.4 (Security Enhancement) completed ✅
+**Current Status**: Phase 5.2 (File Upload Module) completed ✅
 
 ---
 
@@ -1194,16 +1194,98 @@ curl -X OPTIONS http://localhost:3000/api \
 
 ---
 
-#### 5.2 文件上传模块 ⭐⭐
+#### 5.2 文件上传模块 ⭐⭐ ✅
 **优先级**: P1 (重要)
+**状态**: 已完成
 
 **实现内容**:
-- [ ] 配置 Multer
-- [ ] 单文件上传
-- [ ] 多文件上传
-- [ ] 文件类型验证
-- [ ] 文件大小限制
-- [ ] 文件记录到数据库
+- [x] 配置 Multer
+- [x] 单文件上传
+- [x] 多文件上传
+- [x] 文件类型验证
+- [x] 文件大小限制
+- [x] 文件记录到数据库
+
+**已实现功能**:
+- ✅ 配置 Multer 进行文件处理（磁盘存储）
+- ✅ 单文件上传接口 (`POST /upload/file`)
+- ✅ 多文件上传接口 (`POST /upload/files` - 最多10个文件)
+- ✅ 头像专用上传接口 (`POST /upload/avatar`)
+- ✅ 文件类型验证 (支持图片、文档、PDF等)
+- ✅ 文件大小限制 (默认10MB，可配置)
+- ✅ 文件存储结构 (年/月目录组织)
+- ✅ UUID文件名生成，防止文件名冲突
+- ✅ 文件分类系统 (avatar、document、image、video、audio、other)
+- ✅ 文件权限控制 (公开/私有)
+- ✅ 文件列表查询 (分页、分类、搜索)
+- ✅ 文件下载功能 (流式传输)
+- ✅ 单文件删除和批量删除
+- ✅ 存储统计信息接口
+- ✅ 过期文件清理功能
+- ✅ 公开文件访问控制器
+- ✅ 静态文件服务配置
+
+**验证步骤**:
+
+1. 启动应用:
+   ```bash
+   pnpm start:dev
+   ```
+
+2. 测试单文件上传:
+   ```bash
+   curl -X POST http://localhost:3000/upload/file \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -F "file=@test.jpg" \
+     -F "category=image" \
+     -F "description=测试图片" \
+     -F "isPublic=true"
+   ```
+
+3. 测试多文件上传:
+   ```bash
+   curl -X POST http://localhost:3000/upload/files \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -F "files=@test1.jpg" \
+     -F "files=@test2.jpg" \
+     -F "category=image"
+   ```
+
+4. 测试文件列表:
+   ```bash
+   curl http://localhost:3000/upload/files?category=image&page=1&limit=20 \
+     -H "Authorization: Bearer YOUR_TOKEN"
+   ```
+
+5. 测试文件下载:
+   ```bash
+   curl http://localhost:3000/upload/download/{fileId} \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -o downloaded-file.jpg
+   ```
+
+6. 访问 Swagger 文档测试:
+   - http://localhost:3000/api
+   - 查看 `upload` 和 `public-files` 标签下的所有接口
+
+**文件清单**:
+- `src/modules/upload/upload.module.ts` (125行) - 模块配置
+- `src/modules/upload/upload.service.ts` (432行) - 核心服务实现
+- `src/modules/upload/upload.controller.ts` (487行) - 控制器实现
+- `src/modules/upload/dto/upload.dto.ts` (125行) - DTO定义
+- `src/modules/upload/index.ts` (4行) - 导出文件
+- `src/config/configuration.ts` (更新: 添加上传配置)
+- `src/config/env.validation.ts` (更新: 添加上传环境变量)
+- `src/main.ts` (更新: 配置静态文件服务)
+- `src/app.module.ts` (更新: 集成 UploadModule)
+
+**验收标准**:
+- ✅ 文件上传功能正常
+- ✅ 文件类型和大小验证有效
+- ✅ 文件权限控制正确
+- ✅ TypeScript 编译 0 错误
+- ✅ ESLint 检查通过
+- ✅ 应用正常启动
 
 ---
 

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Login Alert</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .content h2 {
+            color: #fa709a;
+            margin-top: 0;
+        }
+        .alert-box {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .info-table {
+            width: 100%;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .info-table td {
+            padding: 12px 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .info-table td:first-child {
+            font-weight: 600;
+            width: 30%;
+            background-color: #f1f3f5;
+        }
+        .action-box {
+            background-color: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 5px;
+            font-weight: 600;
+        }
+        .button:hover {
+            opacity: 0.9;
+        }
+        .footer {
+            padding: 20px 30px;
+            background-color: #f8f9fa;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #fa709a;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 New Login Detected</h1>
+        </div>
+        <div class="content">
+            <h2>Hi {{username}},</h2>
+
+            <div class="alert-box">
+                <strong>⚠️ We detected a new login to your {{appName}} account</strong>
+            </div>
+
+            <p>Someone just signed in to your account. Here are the details:</p>
+
+            <table class="info-table">
+                <tr>
+                    <td>📅 Time</td>
+                    <td>{{loginTime}}</td>
+                </tr>
+                <tr>
+                    <td>🌐 IP Address</td>
+                    <td>{{ip}}</td>
+                </tr>
+                {{#if location}}
+                <tr>
+                    <td>📍 Location</td>
+                    <td>{{location}}</td>
+                </tr>
+                {{/if}}
+                {{#if device}}
+                <tr>
+                    <td>💻 Device</td>
+                    <td>{{device}}</td>
+                </tr>
+                {{/if}}
+                {{#if browser}}
+                <tr>
+                    <td>🌏 Browser</td>
+                    <td>{{browser}}</td>
+                </tr>
+                {{/if}}
+            </table>
+
+            <h3>Was this you?</h3>
+            <p>If you recognize this activity, you can safely ignore this email. Your account is secure.</p>
+
+            <div class="action-box">
+                <strong>🚨 If this wasn't you:</strong>
+                <p>Your account may be compromised. Take action immediately:</p>
+                <ol style="margin: 10px 0; padding-left: 20px;">
+                    <li>Change your password immediately</li>
+                    <li>Review your recent account activity</li>
+                    <li>Enable two-factor authentication</li>
+                    <li>Contact support if you need assistance</li>
+                </ol>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="{{appUrl}}/security" class="button">Review Account Security</a>
+                </div>
+            </div>
+
+            <h3>💡 Security Recommendations:</h3>
+            <ul>
+                <li>Use a strong, unique password for your account</li>
+                <li>Enable two-factor authentication for extra security</li>
+                <li>Review your active sessions regularly</li>
+                <li>Be cautious of phishing emails asking for your password</li>
+            </ul>
+
+            <p>If you have any concerns or questions, please contact our support team at <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>.</p>
+
+            <p>Stay safe,<br>
+            The {{appName}} Security Team</p>
+        </div>
+        <div class="footer">
+            <p>© {{year}} {{appName}}. All rights reserved.</p>
+            <p>
+                <a href="{{appUrl}}/privacy">Privacy Policy</a> |
+                <a href="{{appUrl}}/terms">Terms of Service</a> |
+                <a href="{{appUrl}}/security">Security Center</a>
+            </p>
+            <p><small>This is an automated security alert for your {{appName}} account.</small></p>
+        </div>
+    </div>
+</body>
+</html>

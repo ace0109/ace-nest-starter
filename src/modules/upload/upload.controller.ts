@@ -240,7 +240,10 @@ export class UploadController {
       },
     },
   })
-  getFileList(@Query() query: FileListQueryDto, @CurrentUserId() userId?: string) {
+  getFileList(
+    @Query() query: FileListQueryDto,
+    @CurrentUserId() userId?: string,
+  ) {
     return this.uploadService.getFileList(
       userId,
       query.category,
