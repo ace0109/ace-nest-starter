@@ -1,98 +1,220 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# ACE NestJS Starter 🚀
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+<div align="center">
+  <img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" />
+  <h3>Production-Ready NestJS Scaffolding</h3>
+  <p>一个功能完整、开箱即用的 NestJS 企业级项目脚手架</p>
+  <p>
+    <img src="https://img.shields.io/badge/NestJS-v11-red" alt="NestJS Version" />
+    <img src="https://img.shields.io/badge/TypeScript-v5.7-blue" alt="TypeScript Version" />
+    <img src="https://img.shields.io/badge/Prisma-v6.18-green" alt="Prisma Version" />
+    <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License" />
+  </p>
+</div>
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## ✨ 特性
 
-## Description
+### 🎯 核心功能
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **🔐 完整的认证授权体系** - JWT 双令牌 + RBAC 权限控制 + OAuth 2.0 社交登录
+- **📚 自动化 API 文档** - Swagger/OpenAPI 集成，自动生成接口文档
+- **🌍 国际化支持** - 基于 i18next 的多语言支持
+- **📧 邮件服务** - 基于 Nodemailer 的邮件发送功能
+- **📁 文件上传** - 支持多种文件类型上传和管理
+- **🔄 实时通信** - 基于 Socket.io 的 WebSocket 支持
+- **⏰ 任务调度** - 支持 Cron、Interval、Timeout 任务
+- **🚦 限流保护** - 基于 Redis 的分布式限流
+- **❤️ 健康检查** - 完善的健康检查和监控端点
 
-## Project setup
+### 🛠 技术栈
 
-```bash
-$ pnpm install
-```
+- **框架**: NestJS 11.x (最新版本)
+- **语言**: TypeScript 5.7+ (严格模式)
+- **数据库**: PostgreSQL 16 + Prisma ORM
+- **缓存**: Redis 7
+- **认证**: Passport.js + JWT
+- **验证**: Zod (类型安全的 schema 验证)
+- **日志**: Pino (高性能日志)
+- **容器**: Docker + Docker Compose
+- **测试**: Jest + Supertest (E2E)
+- **代码质量**: ESLint + Prettier + Husky + Commitlint
 
-## Compile and run the project
+## 🚀 快速开始
 
-```bash
-# development
-$ pnpm run start
+### 前置要求
 
-# watch mode
-$ pnpm run start:dev
+- Node.js >= 20.0.0
+- pnpm >= 8.0.0
+- PostgreSQL >= 16
+- Redis >= 7
+- Docker & Docker Compose (可选)
 
-# production mode
-$ pnpm run start:prod
-```
+### 安装步骤
 
-## Run tests
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+#### 1. 克隆项目
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+git clone https://github.com/your-username/ace-nest-starter.git
+cd ace-nest-starter
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+#### 2. 安装依赖
 
-## Resources
+```bash
+pnpm install
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+#### 3. 环境配置
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+cp .env.example .env
+# 编辑 .env 文件，配置数据库连接等必要参数
+```
 
-## Support
+#### 4. 使用 Docker 启动服务（推荐）
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# 启动开发环境（PostgreSQL + Redis + pgAdmin + Mailhog）
+./docker.sh dev:up
 
-## Stay in touch
+# 或者使用 docker-compose
+docker-compose -f docker-compose.dev.yml up -d
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+#### 5. 数据库初始化
 
-## License
+```bash
+# 运行数据库迁移
+pnpm prisma:migrate
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+# 生成 Prisma Client
+pnpm prisma:generate
+```
+
+#### 6. 启动应用
+
+```bash
+# 开发环境
+pnpm start:dev
+
+# 生产环境
+pnpm build
+pnpm start:prod
+```
+
+应用将运行在 http://localhost:3000
+
+## 📖 API 文档
+
+启动应用后，访问以下地址查看 API 文档：
+
+- Swagger UI: http://localhost:3000/api
+- OpenAPI JSON: http://localhost:3000/api-json
+
+## 🔧 常用命令
+
+### 开发
+
+```bash
+pnpm start:dev       # 开发模式（热重载）
+pnpm start:debug     # 调试模式
+pnpm build          # 构建生产版本
+pnpm start:prod     # 运行生产版本
+```
+
+### 数据库
+
+```bash
+pnpm prisma:migrate      # 运行迁移
+pnpm prisma:generate     # 生成 Prisma Client
+pnpm prisma:studio       # 打开 Prisma Studio
+pnpm prisma:seed        # 填充种子数据
+pnpm prisma:reset       # 重置数据库
+```
+
+### 测试
+
+```bash
+pnpm test           # 运行单元测试
+pnpm test:watch     # 监听模式
+pnpm test:cov       # 生成覆盖率报告
+pnpm test:e2e       # 运行 E2E 测试
+```
+
+### 代码质量
+
+```bash
+pnpm lint           # ESLint 检查
+pnpm format         # Prettier 格式化
+pnpm type-check     # TypeScript 类型检查
+```
+
+### Docker
+
+```bash
+./docker.sh dev:up       # 启动开发环境
+./docker.sh dev:down     # 停止开发环境
+./docker.sh build        # 构建生产镜像
+./docker.sh up           # 启动生产环境
+```
+
+## 🔐 认证与授权
+
+### JWT 认证
+
+- 双令牌机制（Access Token + Refresh Token）
+- Access Token 有效期：2小时（可配置）
+- Refresh Token 有效期：30天（可配置）
+
+### RBAC 权限控制
+
+- 基于角色的访问控制
+- 权限格式：`resource:action`（如 `user:create`）
+- 支持通配符：`*:*`（超级管理员）
+
+### OAuth 2.0 社交登录
+
+- ✅ Google
+- ✅ GitHub
+- ✅ 微信
+
+## 📦 模块说明
+
+完整的模块化架构，包含认证、用户管理、权限控制、邮件服务、文件上传、国际化、WebSocket、任务调度、OAuth 社交登录等功能。
+
+## 🚢 部署
+
+### Docker 部署（推荐）
+
+```bash
+# 构建镜像
+docker build -t ace-nest-starter:latest .
+
+# 使用 Docker Compose 部署
+docker-compose up -d
+```
+
+### 传统部署
+
+```bash
+# 构建应用
+pnpm build
+
+# 设置环境变量
+export NODE_ENV=production
+export DATABASE_URL=postgresql://...
+
+# 运行应用
+node dist/src/main.js
+```
+
+## 📄 许可证
+
+本项目采用 MIT 许可证
+
+---
+
+<div align="center">
+  <p>如果这个项目对你有帮助，请给一个 ⭐️ Star！</p>
+  <p>Made with ❤️ by ACE Team</p>
+</div>
