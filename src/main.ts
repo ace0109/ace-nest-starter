@@ -5,6 +5,12 @@ import { Logger } from 'nestjs-pino';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import helmet from 'helmet';
+import compression from 'compression';
+import {
+  developmentHelmetConfig,
+  productionHelmetConfig,
+} from './common/security/helmet.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -20,6 +26,30 @@ async function bootstrap() {
 
   const port = configService.get<number>('app.port', 3000);
   const env = configService.get<string>('app.env', 'development');
+
+  // 配置 Helmet 安全头
+  const helmetConfig =
+    env === 'production' ? productionHelmetConfig : developmentHelmetConfig;
+  app.use(helmet(helmetConfig));
+
+  // 配置响应压缩
+  app.use(
+    compression({
+      filter: (req: unknown, res: unknown) => {
+        // 不压缩流式响应
+        const response = res as {
+          getHeader?: (name: string) => string | undefined;
+        };
+        if (response.getHeader && response.getHeader('x-no-compression')) {
+          return false;
+        }
+        // 回退到标准过滤函数
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        return compression.filter(req as any, res as any);
+      },
+      threshold: 1024, // 只压缩大于 1KB 的响应
+    }),
+  );
 
   // 配置全局验证管道
   app.useGlobalPipes(

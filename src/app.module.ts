@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RedisTestController } from './app.redis-test.controller';
 import { ThrottlerTestController } from './app.throttler-test.controller';
+import { SecurityTestController } from './app.security-test.controller';
 import configurations from './config/configuration';
 import { validateEnv } from './config/env.validation';
 import { loggerConfig } from './common/logger';
@@ -13,6 +14,7 @@ import { PrismaModule } from './common/prisma';
 import { RedisModule } from './common/redis';
 import { ThrottlerModule, CustomThrottlerGuard } from './common/throttler';
 import { HealthModule } from './common/health';
+import { SecurityModule } from './common/security';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { TraceIdMiddleware } from './common/middleware';
 import { UsersModule } from './modules/users';
@@ -40,13 +42,20 @@ import { JwtAuthGuard } from './common/guards';
     ThrottlerModule,
     // 健康检查模块
     HealthModule,
+    // 安全模块
+    SecurityModule,
     // 业务模块
     UsersModule,
     AuthModule,
     RolesModule,
     PermissionsModule,
   ],
-  controllers: [AppController, RedisTestController, ThrottlerTestController],
+  controllers: [
+    AppController,
+    RedisTestController,
+    ThrottlerTestController,
+    SecurityTestController,
+  ],
   providers: [
     AppService,
     // 全局异常过滤器

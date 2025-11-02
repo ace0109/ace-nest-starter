@@ -53,6 +53,8 @@ export class CustomThrottlerGuard extends BaseThrottlerGuard {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     throttlerLimitDetail: ThrottlerLimitDetail,
   ): Promise<void> {
-    return Promise.reject(new Error('请求过于频繁，请稍后再试 (Too Many Requests)'));
+    return Promise.reject(
+      new Error('请求过于频繁，请稍后再试 (Too Many Requests)'),
+    );
   }
 }
