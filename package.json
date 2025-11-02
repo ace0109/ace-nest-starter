@@ -28,6 +28,9 @@
     "docker:down": "docker-compose -f docker-compose.dev.yml down",
     "docker:stop": "docker-compose -f docker-compose.dev.yml stop",
     "docker:logs": "docker-compose -f docker-compose.dev.yml logs -f",
+    "prepare": "husky",
+    "commit": "git-cz",
+    "type-check": "tsc --noEmit",
     "docker:clean": "docker-compose -f docker-compose.dev.yml down -v",
     "db:start": "docker run -d --name postgres-dev -e POSTGRES_PASSWORD=postgres123 -e POSTGRES_DB=ace_nest_db -p 5432:5432 postgres:16-alpine || docker start postgres-dev",
     "db:stop": "docker stop postgres-dev",
@@ -101,6 +104,8 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@nestjs/cli": "^11.0.0",
@@ -119,7 +124,9 @@
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^16.0.0",
+    "husky": "^9.1.7",
     "jest": "^30.0.0",
+    "lint-staged": "^16.2.6",
     "prettier": "^3.4.2",
     "prisma": "^6.18.0",
     "source-map-support": "^0.5.21",

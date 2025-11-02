@@ -1,0 +1,86 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*~
+
+# Test coverage
+coverage
+.nyc_output
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs
+README.md
+DEVELOPMENT_PLAN.md
+REQUIREMENTS_DETAIL.md
+TECH_RESEARCH_SUMMARY.md
+CLAUDE.md
+SECURITY.md
+
+# Docker files
+Dockerfile
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Development files
+.eslintrc.js
+.prettierrc
+jest.config.js
+tsconfig.build.json
+nest-cli.json
+
+# Test files
+test
+e2e
+*.spec.ts
+*.e2e-spec.ts
+
+# Temporary files
+tmp
+temp
+.tmp
+
+# Uploads (should be volume mounted)
+uploads

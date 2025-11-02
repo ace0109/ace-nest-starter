@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
+  # PostgreSQL Database (Development)
   postgres:
     image: postgres:16-alpine
     container_name: ace-postgres-dev
@@ -19,8 +19,10 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - ace-network
 
-  # Redis Cache
+  # Redis Cache (Development)
   redis:
     image: redis:7-alpine
     container_name: ace-redis-dev
@@ -35,8 +37,28 @@ services:
       timeout: 3s
       retries: 3
     restart: unless-stopped
+    networks:
+      - ace-network
 
-  # Redis Commander (Optional - Web UI for Redis)
+  # pgAdmin (Web UI for PostgreSQL)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ace-pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - ace-network
+
+  # Redis Commander (Web UI for Redis)
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: ace-redis-commander
@@ -47,12 +69,26 @@ services:
     depends_on:
       - redis
     restart: unless-stopped
+    networks:
+      - ace-network
+
+  # Mailhog (Email Testing)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ace-mailhog-dev
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web UI
+    restart: unless-stopped
+    networks:
+      - ace-network
 
 volumes:
   postgres-data:
   redis-data:
+  pgadmin-data:
 
 networks:
-  default:
+  ace-network:
     name: ace-network
     driver: bridge
