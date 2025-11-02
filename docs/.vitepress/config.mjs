@@ -28,6 +28,7 @@ export default defineConfig({
       { text: '指南', link: '/guide/getting-started' },
       { text: 'API 文档', link: '/api/' },
       { text: '示例', link: '/examples/' },
+      { text: '开发历程', link: '/journey/' },
       {
         text: '参考',
         items: [
@@ -47,6 +48,30 @@ export default defineConfig({
     ],
 
     sidebar: {
+      '/journey/': [
+        {
+          text: 'AI 协作开发历程',
+          items: [
+            { text: '项目概述', link: '/journey/' },
+            { text: '需求与规划', link: '/journey/requirements' },
+            { text: '技术选型', link: '/journey/tech-selection' },
+            { text: '开发实录', link: '/journey/development-log' },
+            { text: 'AI 协作总结', link: '/journey/ai-collaboration' },
+            {
+              text: '原始文档',
+              collapsed: true,
+              items: [
+                { text: '需求文档', link: '/journey/documents/REQUIREMENTS' },
+                { text: '详细需求', link: '/journey/documents/REQUIREMENTS_DETAIL' },
+                { text: '开发计划', link: '/journey/documents/DEVELOPMENT_PLAN' },
+                { text: '技术研究', link: '/journey/documents/TECH_RESEARCH_SUMMARY' },
+                { text: 'ORM 对比', link: '/journey/documents/TYPEORM_VS_PRISMA_COMPARISON' },
+                { text: 'Claude 指导', link: '/journey/documents/CLAUDE' },
+              ],
+            },
+          ],
+        },
+      ],
       '/guide/': [
         {
           text: '开始',
