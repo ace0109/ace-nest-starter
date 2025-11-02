@@ -64,6 +64,51 @@ export const envSchema = z.object({
   // 微信 OAuth
   WECHAT_APP_ID: z.string().optional(),
   WECHAT_APP_SECRET: z.string().optional(),
+
+  // ==================== 文件上传配置 ====================
+  UPLOAD_PATH: z.string().default('./uploads'),
+  UPLOAD_MAX_FILE_SIZE: z.coerce.number().default(10 * 1024 * 1024), // 10MB
+  UPLOAD_ALLOWED_MIME_TYPES: z
+    .string()
+    .optional()
+    .transform((val) =>
+      val
+        ? val.split(',')
+        : [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'text/plain',
+            'text/csv',
+          ],
+    ),
+  UPLOAD_ALLOWED_EXTENSIONS: z
+    .string()
+    .optional()
+    .transform((val) =>
+      val
+        ? val.split(',')
+        : [
+            '.jpg',
+            '.jpeg',
+            '.png',
+            '.gif',
+            '.webp',
+            '.pdf',
+            '.doc',
+            '.docx',
+            '.xls',
+            '.xlsx',
+            '.txt',
+            '.csv',
+          ],
+    ),
 });
 
 /**

@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { RedisTestController } from './app.redis-test.controller';
 import { ThrottlerTestController } from './app.throttler-test.controller';
 import { SecurityTestController } from './app.security-test.controller';
+import { EmailTestController } from './app.email-test.controller';
 import configurations from './config/configuration';
 import { validateEnv } from './config/env.validation';
 import { loggerConfig } from './common/logger';
@@ -21,6 +22,8 @@ import { UsersModule } from './modules/users';
 import { AuthModule } from './modules/auth';
 import { RolesModule } from './modules/roles';
 import { PermissionsModule } from './modules/permissions';
+import { EmailModule } from './modules/email';
+import { UploadModule } from './modules/upload';
 import { JwtAuthGuard } from './common/guards';
 
 @Module({
@@ -44,6 +47,10 @@ import { JwtAuthGuard } from './common/guards';
     HealthModule,
     // 安全模块
     SecurityModule,
+    // 邮件模块
+    EmailModule,
+    // 文件上传模块
+    UploadModule,
     // 业务模块
     UsersModule,
     AuthModule,
@@ -55,6 +62,7 @@ import { JwtAuthGuard } from './common/guards';
     RedisTestController,
     ThrottlerTestController,
     SecurityTestController,
+    EmailTestController,
   ],
   providers: [
     AppService,

@@ -115,6 +115,45 @@ export const throttlerConfig = registerAs('throttler', () => ({
 }));
 
 /**
+ * 文件上传配置
+ * File upload configuration
+ */
+export const uploadConfig = registerAs('upload', () => ({
+  path: process.env.UPLOAD_PATH || './uploads',
+  maxFileSize: parseInt(
+    process.env.UPLOAD_MAX_FILE_SIZE ?? String(10 * 1024 * 1024),
+    10,
+  ), // 10MB
+  allowedMimeTypes: process.env.UPLOAD_ALLOWED_MIME_TYPES?.split(',') || [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain',
+    'text/csv',
+  ],
+  allowedExtensions: process.env.UPLOAD_ALLOWED_EXTENSIONS?.split(',') || [
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.webp',
+    '.pdf',
+    '.doc',
+    '.docx',
+    '.xls',
+    '.xlsx',
+    '.txt',
+    '.csv',
+  ],
+}));
+
+/**
  * 导出所有配置
  */
 export default [
@@ -126,4 +165,5 @@ export default [
   logConfig,
   oauthConfig,
   throttlerConfig,
+  uploadConfig,
 ];

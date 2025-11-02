@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
@@ -7,13 +8,15 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import compression from 'compression';
+import { join } from 'path';
+import { Response } from 'express';
 import {
   developmentHelmetConfig,
   productionHelmetConfig,
 } from './common/security/helmet.config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true, // 缓冲日志直到 Pino 准备就绪
   });
 
@@ -77,6 +80,17 @@ async function bootstrap() {
       'Content-Type, Accept, Authorization, X-Trace-Id, X-Request-Id',
   });
 
+  // 配置静态文件服务（用于上传文件的访问）
+  const uploadPath = configService.get<string>('upload.path', './uploads');
+  const fullUploadPath = join(process.cwd(), uploadPath);
+  app.useStaticAssets(fullUploadPath, {
+    prefix: '/uploads',
+    setHeaders: (res: Response) => {
+      // 设置缓存控制
+      res.set('Cache-Control', 'public, max-age=3600');
+    },
+  });
+
   // 配置 Swagger
   if (env !== 'production') {
     const config = new DocumentBuilder()
@@ -100,6 +114,8 @@ async function bootstrap() {
       .addTag('users', 'User management endpoints')
       .addTag('roles', 'Role management endpoints')
       .addTag('permissions', 'Permission management endpoints')
+      .addTag('upload', 'File upload endpoints')
+      .addTag('public-files', 'Public file access endpoints')
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
