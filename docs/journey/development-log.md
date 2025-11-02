@@ -203,7 +203,7 @@ COPY --from=builder /app/node_modules ./node_modules
 CMD ["node", "dist/main.js"]
 ```
 
-### 44:00-48:00 最终测试与发布
+### 22:00-24:00 最终测试与发布
 
 #### 质量检查清单
 
