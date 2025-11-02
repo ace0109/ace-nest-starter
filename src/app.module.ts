@@ -12,6 +12,7 @@ import { loggerConfig } from './common/logger';
 import { PrismaModule } from './common/prisma';
 import { RedisModule } from './common/redis';
 import { ThrottlerModule, CustomThrottlerGuard } from './common/throttler';
+import { HealthModule } from './common/health';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { TraceIdMiddleware } from './common/middleware';
 import { UsersModule } from './modules/users';
@@ -37,6 +38,8 @@ import { JwtAuthGuard } from './common/guards';
     RedisModule,
     // 限流模块
     ThrottlerModule,
+    // 健康检查模块
+    HealthModule,
     // 业务模块
     UsersModule,
     AuthModule,

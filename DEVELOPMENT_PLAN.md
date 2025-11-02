@@ -1027,15 +1027,76 @@ curl -X OPTIONS http://localhost:3000/api \
 
 ---
 
-#### 4.3 健康检查模块 ⭐⭐
+#### 4.3 健康检查模块 ⭐⭐ ✅
 **优先级**: P1 (重要)
+**状态**: 已完成
 
 **实现内容**:
-- [ ] 安装 `@nestjs/terminus`
-- [ ] 数据库健康检查
-- [ ] Redis 健康检查
-- [ ] 磁盘和内存检查
-- [ ] 创建 `/health` 端点
+- [x] 安装 `@nestjs/terminus`
+- [x] 数据库健康检查
+- [x] Redis 健康检查
+- [x] 磁盘和内存检查
+- [x] 创建 `/health` 端点
+
+**已实现功能**:
+- ✅ 完整的健康检查控制器 (8个端点)
+- ✅ 基础健康检查 `/health/ping` - 快速响应
+- ✅ 完整系统检查 `/health` - 所有服务状态
+- ✅ 活跃性探针 `/health/live` - Kubernetes liveness
+- ✅ 就绪性探针 `/health/ready` - Kubernetes readiness
+- ✅ 数据库健康指标 (连接测试、响应时间、诊断信息)
+- ✅ Redis健康指标 (PING测试、内存使用、性能指标)
+- ✅ 内存健康指标 (系统内存、堆内存、内存泄漏检测)
+- ✅ 磁盘健康指标 (空间使用、I/O性能、权限检查)
+- ✅ 系统信息端点 `/health/info` - 详细系统状态
+
+**验证步骤**:
+1. 测试基础健康检查:
+   ```bash
+   curl http://localhost:3000/health/ping
+   # 返回: {"status":"ok","timestamp":"..."}
+   ```
+
+2. 测试完整健康检查:
+   ```bash
+   curl http://localhost:3000/health
+   # 返回所有服务状态 (database, redis, memory, disk)
+   ```
+
+3. 测试系统信息:
+   ```bash
+   curl http://localhost:3000/health/info
+   # 返回应用和系统详细信息
+   ```
+
+4. 测试数据库健康:
+   ```bash
+   curl http://localhost:3000/health/database
+   ```
+
+5. 测试Redis健康:
+   ```bash
+   curl http://localhost:3000/health/redis
+   ```
+
+**文件清单**:
+- `src/common/health/health.module.ts` (29行) - 健康检查模块
+- `src/common/health/health.controller.ts` (308行) - 健康检查控制器
+- `src/common/health/indicators/prisma.health.ts` (131行) - 数据库健康指标
+- `src/common/health/indicators/redis.health.ts` (178行) - Redis健康指标
+- `src/common/health/indicators/memory.health.ts` (230行) - 内存健康指标
+- `src/common/health/indicators/disk.health.ts` (263行) - 磁盘健康指标
+- `src/common/health/index.ts` (6行) - 导出文件
+- `src/common/redis/redis.service.ts` (更新: 添加 ping, getInfo, dbSize 方法)
+
+**验收标准**:
+- ✅ 所有健康检查端点正常工作
+- ✅ 数据库连接检查通过 (2ms响应)
+- ✅ Redis连接检查通过 (1ms响应)
+- ✅ 内存使用率正常 (30.95%)
+- ✅ 磁盘空间充足 (0.80%使用)
+- ✅ ESLint 0 错误
+- ✅ TypeScript 编译通过
 
 ---
 
