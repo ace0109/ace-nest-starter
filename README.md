@@ -110,6 +110,32 @@ pnpm start:prod
 - Swagger UI: http://localhost:3000/api
 - OpenAPI JSON: http://localhost:3000/api-json
 
+## 📚 项目文档
+
+本项目提供了完整的文档站点，使用 VitePress 构建：
+
+```bash
+# 启动文档开发服务器
+pnpm docs:dev
+
+# 构建文档
+pnpm docs:build
+
+# 预览文档
+pnpm docs:preview
+```
+
+文档站点地址：http://localhost:5173
+
+文档包含：
+
+- 🚀 快速开始指南
+- 🏗️ 项目架构说明
+- 🔧 配置系统详解
+- 📦 所有模块的使用文档
+- 🚢 部署指南
+- 💡 最佳实践
+
 ## 🔧 常用命令
 
 ### 开发

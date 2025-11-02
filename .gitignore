@@ -58,3 +58,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 .history
 
 /generated/prisma
+
+/docs/.vitepress/dist
+/docs/.vitepress/cache

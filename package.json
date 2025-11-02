@@ -40,7 +40,10 @@
     "dev:setup": "pnpm docker:up && sleep 5 && pnpm prisma:migrate && pnpm prisma:seed",
     "dev:start": "pnpm docker:up && pnpm start:dev",
     "dev:stop": "pnpm docker:stop",
-    "dev:clean": "pnpm docker:clean"
+    "dev:clean": "pnpm docker:clean",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "@nest-lab/throttler-storage-redis": "^1.1.0",
@@ -133,7 +136,8 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0"
+    "typescript-eslint": "^8.20.0",
+    "vitepress": "^1.6.4"
   },
   "jest": {
     "moduleFileExtensions": [
