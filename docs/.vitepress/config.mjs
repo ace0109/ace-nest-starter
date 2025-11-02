@@ -5,7 +5,7 @@ export default defineConfig({
   title: 'ACE NestJS Starter',
   description: 'Production-ready NestJS scaffolding for rapid API development',
   lang: 'zh-CN',
-  base: '/', // Change this if deploying to GitHub Pages with a base path
+  base: '/ace-nest-starter/', // GitHub Pages base path
 
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
@@ -146,7 +146,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/yourusername/ace-nest-starter' },
+      { icon: 'github', link: 'https://github.com/ace0109/ace-nest-starter' },
     ],
 
     footer: {
@@ -155,7 +155,7 @@ export default defineConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/yourusername/ace-nest-starter/edit/main/docs/:path',
+      pattern: 'https://github.com/ace0109/ace-nest-starter/edit/main/docs/:path',
       text: '在 GitHub 上编辑此页',
     },
 
