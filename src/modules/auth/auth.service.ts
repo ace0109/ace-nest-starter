@@ -59,7 +59,7 @@ export class AuthService {
   ): Promise<{
     id: string;
     email: string;
-    username: string;
+    username?: string | null;
     nickname?: string | null;
     phone?: string | null;
     avatar?: string | null;
@@ -69,7 +69,10 @@ export class AuthService {
       return null;
     }
 
-    const isPasswordValid = await bcryptjs.compare(password, user.password);
+    const isPasswordValid = await bcryptjs.compare(
+      password,
+      user.password || '',
+    );
     if (!isPasswordValid) {
       return null;
     }
@@ -86,7 +89,7 @@ export class AuthService {
   async login(user: {
     id: string;
     email: string;
-    username: string;
+    username?: string | null;
     nickname?: string | null;
     phone?: string | null;
     avatar?: string | null;
@@ -101,7 +104,7 @@ export class AuthService {
     const payload: TokenPayload = {
       sub: user.id,
       email: user.email,
-      username: user.username,
+      username: user.username || '',
       roles:
         userWithRoles.roles
           ?.map((ur) => ur.role?.code)
@@ -116,7 +119,7 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        username: user.username,
+        username: user.username || '',
         nickname: user.nickname,
         phone: user.phone,
         avatar: user.avatar,
@@ -166,7 +169,7 @@ export class AuthService {
     const payload: TokenPayload = {
       sub: user.id,
       email: user.email,
-      username: user.username,
+      username: user.username || '',
       roles:
         user.roles
           ?.map((ur) => ur.role?.code)

@@ -225,7 +225,7 @@ export class UsersService {
     // 验证旧密码
     const isPasswordValid = await bcrypt.compare(
       changePasswordDto.oldPassword,
-      user.password,
+      user.password || '',
     );
 
     if (!isPasswordValid) {

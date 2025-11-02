@@ -19,18 +19,21 @@ datasource db {
 model User {
   id        String   @id @default(uuid()) @db.Uuid
   email     String   @unique @db.VarChar(255)
-  username  String   @unique @db.VarChar(50)
-  password  String   @db.VarChar(255)
+  username  String?  @unique @db.VarChar(50) // 改为可选，OAuth 用户可能没有用户名
+  password  String?  @db.VarChar(255) // 改为可选，OAuth 用户可能没有密码
+  name      String?  @db.VarChar(100) // 添加 name 字段
   nickname  String?  @db.VarChar(100)
   avatar    String?  @db.VarChar(500)
   phone     String?  @unique @db.VarChar(20)
   status    UserStatus @default(ACTIVE)
+  isActive  Boolean  @default(true) @map("is_active")
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz
 
-  roles     UserRole[]
+  roles            UserRole[]
+  oauthConnections OAuthConnection[]
 
   @@map("users")
   @@index([email])
@@ -76,6 +79,28 @@ model Permission {
 }
 
 // ==================== 关联表 ====================
+
+/// OAuth 连接表
+model OAuthConnection {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  provider   String   @db.VarChar(50) // google, github, wechat
+  providerId String   @map("provider_id") @db.VarChar(255) // OAuth 平台的用户ID
+  email      String?  @db.VarChar(255)
+  name       String?  @db.VarChar(100)
+  avatar     String?  @db.VarChar(500)
+  raw        Json?    // 原始 OAuth 数据
+
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@unique([userId, provider])
+  @@map("oauth_connections")
+  @@index([userId])
+}
 
 /// 用户角色关联表
 model UserRole {

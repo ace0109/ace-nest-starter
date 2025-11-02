@@ -75,18 +75,25 @@ export const logConfig = registerAs('log', () => ({
  */
 export const oauthConfig = registerAs('oauth', () => ({
   google: {
-    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL,
+    callbackURL:
+      process.env.GOOGLE_CALLBACK_URL || '/auth/oauth/google/callback',
+    scope: ['email', 'profile'],
   },
   github: {
-    clientId: process.env.GITHUB_CLIENT_ID,
+    clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: process.env.GITHUB_CALLBACK_URL,
+    callbackURL:
+      process.env.GITHUB_CALLBACK_URL || '/auth/oauth/github/callback',
+    scope: ['user:email'],
   },
   wechat: {
-    appId: process.env.WECHAT_APP_ID,
+    appID: process.env.WECHAT_APP_ID,
     appSecret: process.env.WECHAT_APP_SECRET,
+    callbackURL:
+      process.env.WECHAT_CALLBACK_URL || '/auth/oauth/wechat/callback',
+    scope: 'snsapi_userinfo',
   },
 }));
 

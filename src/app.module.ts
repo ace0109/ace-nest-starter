@@ -27,6 +27,7 @@ import { UploadModule } from './modules/upload';
 import { I18nModule } from './modules/i18n';
 import { WebSocketModule } from './modules/websocket';
 import { SchedulerModule } from './modules/scheduler';
+import { OAuthModule } from './modules/oauth';
 import { JwtAuthGuard } from './common/guards';
 
 @Module({
@@ -60,6 +61,8 @@ import { JwtAuthGuard } from './common/guards';
     WebSocketModule,
     // 任务调度模块
     SchedulerModule,
+    // OAuth 社交登录模块
+    OAuthModule,
     // 业务模块
     UsersModule,
     AuthModule,
