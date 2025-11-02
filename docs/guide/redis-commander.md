@@ -6,14 +6,14 @@ Redis Commander 是一个基于 Web 的 Redis 数据库管理工具，提供了�
 
 ### 对比 Redis CLI vs Redis Commander：
 
-| 功能 | Redis CLI | Redis Commander |
-|------|-----------|-----------------|
-| **使用方式** | 命令行 | Web 界面 |
-| **数据展示** | 文本输出 | 可视化树形结构 |
-| **操作难度** | 需要记住命令 | 点击操作 |
-| **批量操作** | 需要脚本 | 界面选择 |
-| **数据导出** | 手动复制 | 一键导出 |
-| **适合人群** | 开发者 | 所有人 |
+| 功能         | Redis CLI    | Redis Commander |
+| ------------ | ------------ | --------------- |
+| **使用方式** | 命令行       | Web 界面        |
+| **数据展示** | 文本输出     | 可视化树形结构  |
+| **操作难度** | 需要记住命令 | 点击操作        |
+| **批量操作** | 需要脚本     | 界面选择        |
+| **数据导出** | 手动复制     | 一键导出        |
+| **适合人群** | 开发者       | 所有人          |
 
 ## 🚀 访问 Redis Commander
 
@@ -24,6 +24,7 @@ Redis Commander 是一个基于 Web 的 Redis 数据库管理工具，提供了�
 ## 📊 界面功能介绍
 
 ### 1. 左侧树形结构
+
 ```
 📁 local (Redis 连接)
   ├── 📁 user:1:*        (用户数据)
@@ -36,6 +37,7 @@ Redis Commander 是一个基于 Web 的 Redis 数据库管理工具，提供了�
 ```
 
 ### 2. 数据类型图标
+
 - 📄 **String** - 字符串
 - 📊 **Hash** - 哈希表
 - 📋 **List** - 列表
@@ -45,18 +47,21 @@ Redis Commander 是一个基于 Web 的 Redis 数据库管理工具，提供了�
 ### 3. 主要操作
 
 #### 查看数据
+
 - 点击任意 key 查看值
 - 支持 JSON 格式化显示
 - 显示 TTL（剩余时间）
 - 显示数据类型和大小
 
 #### 编辑数据
+
 - 双击值进行编辑
 - 支持添加新 key
 - 修改过期时间
 - 删除 key
 
 #### 搜索功能
+
 - 支持模糊搜索（如 `user:*`）
 - 按类型筛选
 - 按数据库筛选
@@ -64,6 +69,7 @@ Redis Commander 是一个基于 Web 的 Redis 数据库管理工具，提供了�
 ## 💡 实用场景
 
 ### 1. 调试缓存
+
 ```bash
 # 查看所有缓存 keys
 cache:*
@@ -73,6 +79,7 @@ cache:products:page:1
 ```
 
 ### 2. 监控 Token 黑名单
+
 ```bash
 # 查看所有被拉黑的 token
 blacklist:token:*
@@ -82,6 +89,7 @@ blacklist:token:jwt_xxx
 ```
 
 ### 3. 查看用户 Session
+
 ```bash
 # 所有活跃 session
 session:*
@@ -91,6 +99,7 @@ session:user:1:*
 ```
 
 ### 4. 验证码管理
+
 ```bash
 # 查看所有验证码
 captcha:*
@@ -102,15 +111,18 @@ captcha:email:user@example.com
 ## 🛠️ 高级功能
 
 ### 导入/导出
+
 - **导出**: 选择 keys → Export → 下载 JSON
 - **导入**: Import → 选择文件 → 导入
 
 ### 批量操作
+
 - 选择多个 keys（Ctrl/Cmd + 点击）
 - 批量删除
 - 批量设置 TTL
 
 ### 命令行模式
+
 - 底部有 CLI 输入框
 - 可直接执行 Redis 命令
 - 查看命令历史
@@ -118,13 +130,16 @@ captcha:email:user@example.com
 ## 📝 开发技巧
 
 ### 1. 命名规范
+
 使用冒号分隔命名空间，便于在 Redis Commander 中折叠查看：
+
 ```
 user:1:profile      ✅ 好的命名
 user_1_profile      ❌ 不便于分组
 ```
 
 ### 2. 添加测试数据
+
 ```bash
 # 使用我们的测试脚本
 docker exec ace-redis-dev redis-cli <<EOF
@@ -137,6 +152,7 @@ EOF
 ```
 
 ### 3. 清理数据
+
 ```bash
 # 清理特定模式的 keys
 docker exec ace-redis-dev redis-cli --scan --pattern "test:*" | \
@@ -149,11 +165,13 @@ docker exec ace-redis-dev redis-cli --scan --pattern "test:*" | \
 ## ⚠️ 注意事项
 
 ### 开发环境
+
 - ✅ 适合查看和调试数据
 - ✅ 快速修改测试数据
 - ✅ 学习 Redis 数据结构
 
 ### 生产环境
+
 - ⚠️ 需要设置访问密码
 - ⚠️ 限制可执行的命令
 - ⚠️ 只读模式更安全
@@ -167,20 +185,20 @@ docker exec ace-redis-dev redis-cli --scan --pattern "test:*" | \
 redis-commander:
   environment:
     - REDIS_HOSTS=local:redis:6379
-    - HTTP_USER=admin              # 添加用户名
-    - HTTP_PASSWORD=secret123       # 添加密码
-    - REDIS_PASSWORD=redis_pass     # Redis 密码
-    - READ_ONLY=false               # 只读模式
+    - HTTP_USER=admin # 添加用户名
+    - HTTP_PASSWORD=secret123 # 添加密码
+    - REDIS_PASSWORD=redis_pass # Redis 密码
+    - READ_ONLY=false # 只读模式
 ```
 
 ## 🆚 其他 Redis GUI 工具对比
 
-| 工具 | 优点 | 缺点 | 适用场景 |
-|------|------|------|----------|
-| **Redis Commander** | 轻量、Docker友好 | 功能相对简单 | 开发环境 |
-| **RedisInsight** | 官方工具、功能强大 | 较重、需要安装 | 生产环境 |
-| **Another Redis Desktop Manager** | 跨平台、功能丰富 | 需要安装客户端 | 日常开发 |
-| **Medis** | Mac原生、界面美观 | 仅Mac、收费 | Mac用户 |
+| 工具                              | 优点               | 缺点           | 适用场景 |
+| --------------------------------- | ------------------ | -------------- | -------- |
+| **Redis Commander**               | 轻量、Docker友好   | 功能相对简单   | 开发环境 |
+| **RedisInsight**                  | 官方工具、功能强大 | 较重、需要安装 | 生产环境 |
+| **Another Redis Desktop Manager** | 跨平台、功能丰富   | 需要安装客户端 | 日常开发 |
+| **Medis**                         | Mac原生、界面美观  | 仅Mac、收费    | Mac用户  |
 
 ## 📚 快速命令
 

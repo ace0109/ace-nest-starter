@@ -116,7 +116,15 @@ export default defineConfig({
             { text: 'Docker 部署', link: '/guide/docker' },
             { text: '生产环境配置', link: '/guide/production' },
             { text: 'CI/CD 设置', link: '/guide/ci-cd' },
+            { text: 'GitHub Pages 部署', link: '/guide/github-pages' },
             { text: '监控与日志', link: '/guide/monitoring' },
+          ],
+        },
+        {
+          text: '开发工具',
+          collapsed: false,
+          items: [
+            { text: 'Redis Commander', link: '/guide/redis-commander' },
           ],
         },
         {
