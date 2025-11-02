@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Project Goal**: Create an out-of-the-box, production-ready backend starter with best practices baked in.
 
 **Key Principles**:
+
 - Type-safe configuration using Zod (not Joi)
 - Modular architecture with clear separation of concerns
 - Environment-specific validation (loose dev, strict prod)
@@ -35,6 +36,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 After completing EACH module/task, you **MUST** update `DEVELOPMENT_PLAN.md` immediately. This is a **CRITICAL REQUIREMENT** and failure to do so is considered **TASK INCOMPLETE**.
 
 ### Documentation Update Checklist (每个模块完成后必须执行):
+
 1. **Update Task Status** ✅
    - Change task status from ⭐ to ✅ (e.g., `#### 1.3 数据库模块 ⭐⭐⭐ ✅`)
    - Update `**状态**: 已完成`
@@ -61,6 +63,7 @@ After completing EACH module/task, you **MUST** update `DEVELOPMENT_PLAN.md` imm
    - Update `**下一步**` to indicate next task
 
 ### ⚠️ IMPORTANT REMINDERS:
+
 - **Documentation update is NOT optional** - It's part of task completion
 - **A task is NOT complete until documentation is updated** - No exceptions
 - **Update documentation IMMEDIATELY after code completion** - Not later
@@ -75,13 +78,16 @@ After completing EACH module/task, you **MUST** update `DEVELOPMENT_PLAN.md` imm
 ## Code Quality Standards
 
 ### ESLint Compliance (CRITICAL - MUST FOLLOW)
+
 **⚠️ IMPORTANT**: After completing ANY code changes, you MUST:
+
 1. **Run `pnpm lint`** - Check for ESLint errors
 2. **Fix ALL ESLint errors** - No exceptions, code must have 0 ESLint errors
 3. **Verify TypeScript compilation** - Run `pnpm build` to ensure 0 TypeScript errors
 4. **Never commit code with linting errors** - This is a hard requirement
 
 **🚫 ABSOLUTELY FORBIDDEN**:
+
 - **DO NOT use `eslint-disable-next-line`** - This is NOT allowed
 - **DO NOT use `eslint-disable`** - This is NOT allowed
 - **DO NOT use `// @ts-ignore`** - This is NOT allowed
@@ -89,6 +95,7 @@ After completing EACH module/task, you **MUST** update `DEVELOPMENT_PLAN.md` imm
 - **If you encounter an ESLint error, you MUST solve it properly**
 
 **Common ESLint Rules to Watch**:
+
 - ✅ No unused variables or imports - Remove them instead of disabling
 - ✅ Proper type annotations (avoid `any`) - Use proper types
 - ✅ Consistent formatting (handled by Prettier)
@@ -100,6 +107,7 @@ After completing EACH module/task, you **MUST** update `DEVELOPMENT_PLAN.md` imm
 - ✅ No explicit any - Use unknown and type narrowing instead
 
 ### TypeScript Type Safety
+
 - ❌ **NEVER use `any` type** - Always use proper TypeScript types
 - ✅ Define explicit interfaces/types for function parameters and return values
 - ✅ Use type inference when types are obvious
@@ -144,6 +152,7 @@ The project uses a **centralized configuration approach** with Zod validation:
   - `index.ts` - Barrel export for clean imports
 
 **Configuration modules** (all defined in `configuration.ts`):
+
 - `app` - Application settings (port, env, CORS origins)
 - `database` - Database URL (using Prisma-style DATABASE_URL)
 - `jwt` - Access + Refresh token configuration
@@ -153,6 +162,7 @@ The project uses a **centralized configuration approach** with Zod validation:
 - `oauth` - Social login (Google, GitHub, WeChat)
 
 **Environment Validation Strategy**:
+
 - **Development**: Loose validation - shows warnings but continues with defaults
 - **Production**: Strict validation - fails fast if required vars missing
 - **Production-specific rules**: JWT secrets must be 64+ characters (enforced in `productionEnvSchema`)
@@ -160,6 +170,7 @@ The project uses a **centralized configuration approach** with Zod validation:
 ### Type Safety
 
 The project uses **Zod for schema-first type safety**:
+
 ```typescript
 // Schema automatically infers TypeScript types
 export const envSchema = z.object({...});
@@ -183,15 +194,15 @@ The `ConfigModule` is configured as **global** in `app.module.ts`, meaning all m
 
 ### Technology Stack
 
-| Layer | Technology | Notes |
-|-------|-----------|-------|
-| Framework | NestJS 11.x | Latest version |
-| Language | TypeScript 5.7+ | Strict mode enabled |
-| Validation | Zod 4.x | Preferred over Joi for type inference |
-| Logging | Pino (nestjs-pino) | Fully configured with request logging |
-| Package Manager | pnpm | Enforced in this project |
-| ORM | **Prisma 6.18.0** | Selected for type safety and DX |
-| Database | **PostgreSQL** | Production database |
+| Layer           | Technology         | Notes                                 |
+| --------------- | ------------------ | ------------------------------------- |
+| Framework       | NestJS 11.x        | Latest version                        |
+| Language        | TypeScript 5.7+    | Strict mode enabled                   |
+| Validation      | Zod 4.x            | Preferred over Joi for type inference |
+| Logging         | Pino (nestjs-pino) | Fully configured with request logging |
+| Package Manager | pnpm               | Enforced in this project              |
+| ORM             | **Prisma 6.18.0**  | Selected for type safety and DX       |
+| Database        | **PostgreSQL**     | Production database                   |
 
 ### TypeScript Configuration
 
@@ -225,7 +236,7 @@ Refer to `DEVELOPMENT_PLAN.md` for detailed task breakdown. The project follows 
 2. **Phase 2**: Authentication & Authorization (JWT, RBAC)
 3. **Phase 3**: API Documentation & Validation (Swagger, DTOs)
 4. **Phase 4**: Performance & Security (Redis, rate limiting, health checks)
-5. **Phase 5**: Business Features (email, uploads, i18n, WebSocket, scheduling, OAuth)
+5. **Phase 5**: Business Features (email, uploads, WebSocket, scheduling, OAuth)
 6. **Phase 6**: DevOps (Docker, E2E tests, Git hooks)
 7. **Phase 7**: Documentation & Delivery
 
@@ -243,6 +254,7 @@ Refer to `DEVELOPMENT_PLAN.md` for detailed task breakdown. The project follows 
 ### Response Format (Planned)
 
 All API responses will follow a unified format:
+
 ```typescript
 // Success
 { success: true, code: 200, message: string, data: any, timestamp: number, traceId: string }
@@ -254,6 +266,7 @@ All API responses will follow a unified format:
 ### Error Code Design (Planned)
 
 Mixed approach: HTTP status code + business error code
+
 - `1xxxx` - System errors
 - `2xxxx` - Auth/Authorization errors
 - `3xxxx` - User-related errors
@@ -298,6 +311,7 @@ pnpm start:dev
 ```
 
 **If ANY of these checks fail, you MUST:**
+
 1. Fix the issues immediately
 2. Re-run all checks until they pass
 3. Never proceed with errors or warnings

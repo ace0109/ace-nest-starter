@@ -292,7 +292,7 @@ export class UsersService {
   /**
    * 排除密码字段
    */
-  private excludePassword<T extends { password?: string }>(
+  private excludePassword<T extends { password?: string | null }>(
     user: T,
   ): Omit<T, 'password'> {
     const { password, ...userWithoutPassword } = user;

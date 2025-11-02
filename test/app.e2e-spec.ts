@@ -5,6 +5,32 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/common/prisma';
 
+interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: number;
+    email: string;
+    username: string;
+    name: string;
+    nickname?: string;
+  };
+}
+
+interface UserProfile {
+  id: number;
+  email: string;
+  username: string;
+  name: string;
+  nickname?: string;
+}
+
+interface ErrorResponse {
+  message: string;
+  error?: string;
+  statusCode: number;
+}
+
 describe('Application E2E Tests', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
@@ -87,13 +113,14 @@ describe('Application E2E Tests', () => {
           .send(testUser)
           .expect(201)
           .expect((res) => {
-            expect(res.body).toHaveProperty('accessToken');
-            expect(res.body).toHaveProperty('refreshToken');
-            expect(res.body).toHaveProperty('user');
-            expect(res.body.user.email).toBe(testUser.email);
+            const body = res.body as AuthResponse;
+            expect(body).toHaveProperty('accessToken');
+            expect(body).toHaveProperty('refreshToken');
+            expect(body).toHaveProperty('user');
+            expect(body.user.email).toBe(testUser.email);
 
-            accessToken = res.body.accessToken;
-            refreshToken = res.body.refreshToken;
+            accessToken = body.accessToken;
+            refreshToken = body.refreshToken;
           });
       });
 
@@ -203,9 +230,7 @@ describe('Application E2E Tests', () => {
       });
 
       it('should fail without token', () => {
-        return request(app.getHttpServer())
-          .get('/users/profile')
-          .expect(401);
+        return request(app.getHttpServer()).get('/users/profile').expect(401);
       });
 
       it('should fail with invalid token', () => {
@@ -227,21 +252,20 @@ describe('Application E2E Tests', () => {
           })
           .expect(200)
           .expect((res) => {
-            expect(res.body.name).toBe('Updated Name');
-            expect(res.body.nickname).toBe('UpdatedNick');
+            const body = res.body as UserProfile;
+            expect(body.name).toBe('Updated Name');
+            expect(body.nickname).toBe('UpdatedNick');
           });
       });
 
       it('should fail to update email to duplicate', async () => {
         // Create another user
-        await request(app.getHttpServer())
-          .post('/auth/register')
-          .send({
-            email: 'another@example.com',
-            username: 'another',
-            password: 'Test123456!',
-            name: 'Another User',
-          });
+        await request(app.getHttpServer()).post('/auth/register').send({
+          email: 'another@example.com',
+          username: 'another',
+          password: 'Test123456!',
+          name: 'Another User',
+        });
 
         // Try to update email to duplicate
         return request(app.getHttpServer())
@@ -287,7 +311,8 @@ describe('Application E2E Tests', () => {
         })
         .expect(401)
         .expect((res) => {
-          expect(res.body.message).toContain('Invalid credentials');
+          const body = res.body as ErrorResponse;
+          expect(body.message).toContain('Invalid credentials');
         });
     });
 
@@ -301,7 +326,8 @@ describe('Application E2E Tests', () => {
         })
         .expect(401)
         .expect((res) => {
-          expect(res.body.message).toContain('认证信息无效');
+          const body = res.body as ErrorResponse;
+          expect(body.message).toContain('认证信息无效');
         });
     });
   });
@@ -313,19 +339,17 @@ describe('Application E2E Tests', () => {
       // Make 10 requests rapidly
       for (let i = 0; i < 10; i++) {
         requests.push(
-          request(app.getHttpServer())
-            .post('/auth/login')
-            .send({
-              email: 'test@example.com',
-              password: 'wrongpassword',
-            }),
+          request(app.getHttpServer()).post('/auth/login').send({
+            email: 'test@example.com',
+            password: 'wrongpassword',
+          }),
         );
       }
 
       const responses = await Promise.all(requests);
 
       // At least one should be rate limited (429)
-      const rateLimited = responses.some(res => res.status === 429);
+      const rateLimited = responses.some((res) => res.status === 429);
       expect(rateLimited).toBe(true);
     });
   });

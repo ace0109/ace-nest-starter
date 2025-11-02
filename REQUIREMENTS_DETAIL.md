@@ -10,16 +10,16 @@
 
 ## 📋 技术选型总览
 
-| 模块 | 技术方案 | 版本要求 |
-|------|---------|---------|
-| 框架 | NestJS | 11.x |
-| 语言 | TypeScript | 5.7+ |
-| 数据库 | PostgreSQL / MySQL | 待选型 |
-| ORM | TypeORM / Prisma | 待选型 |
-| 缓存 | Redis | 7.x |
-| 日志 | Pino | Latest |
-| 邮件模板 | Handlebars | Latest |
-| WebSocket | Socket.io | Latest |
+| 模块      | 技术方案           | 版本要求 |
+| --------- | ------------------ | -------- |
+| 框架      | NestJS             | 11.x     |
+| 语言      | TypeScript         | 5.7+     |
+| 数据库    | PostgreSQL / MySQL | 待选型   |
+| ORM       | TypeORM / Prisma   | 待选型   |
+| 缓存      | Redis              | 7.x      |
+| 日志      | Pino               | Latest   |
+| 邮件模板  | Handlebars         | Latest   |
+| WebSocket | Socket.io          | Latest   |
 
 ---
 
@@ -30,6 +30,7 @@
 **核心库**: `@nestjs/config`
 
 #### 配置文件组织
+
 ```
 src/config/
 ├── configuration.ts          # 主配置入口
@@ -44,6 +45,7 @@ src/config/
 ```
 
 #### 环境配置文件
+
 - `.env` - 本地开发配置
 - `.env.development` - 开发环境
 - `.env.production` - 生产环境
@@ -51,10 +53,12 @@ src/config/
 - `.env.example` - 配置模板
 
 #### 验证策略
+
 - **开发环境**: 宽松验证，缺失配置使用默认值，输出警告
 - **生产环境**: 严格验证，缺失必填配置时启动失败
 
 #### 配置示例
+
 ```typescript
 // database.config.ts
 export default registerAs('database', () => ({
@@ -70,13 +74,16 @@ export default registerAs('database', () => ({
 ```
 
 #### 验证Schema (使用 Zod)
+
 ```typescript
 import { z } from 'zod';
 
 // Zod Schema 定义 - TypeScript-first，Schema 即类型
 export const envSchema = z.object({
   // 应用配置
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z
+    .enum(['development', 'production', 'test'])
+    .default('development'),
   PORT: z.coerce.number().default(3000),
 
   // 数据库配置
@@ -119,10 +126,9 @@ export function createEnvSchema(env: string) {
 
   if (env === 'production') {
     // 生产环境额外验证
-    return baseSchema.refine(
-      (data) => data.JWT_ACCESS_SECRET.length >= 64,
-      { message: 'Production JWT secret must be at least 64 characters' }
-    );
+    return baseSchema.refine((data) => data.JWT_ACCESS_SECRET.length >= 64, {
+      message: 'Production JWT secret must be at least 64 characters',
+    });
   }
 
   return baseSchema;
@@ -130,6 +136,7 @@ export function createEnvSchema(env: string) {
 ```
 
 **Zod vs Joi 对比**:
+
 - ✅ **类型安全**: Zod 自动推断类型，Schema 即类型定义
 - ✅ **性能更好**: Zod 性能优于 Joi，包体积更小 (57KB vs 146KB)
 - ✅ **TypeScript-first**: 与 Prisma 完美配合，都是现代化 TS 工具
@@ -143,6 +150,7 @@ export function createEnvSchema(env: string) {
 **核心库**: `nestjs-pino`
 
 #### 日志级别
+
 - `fatal` - 致命错误
 - `error` - 错误
 - `warn` - 警告
@@ -151,10 +159,12 @@ export function createEnvSchema(env: string) {
 - `trace` - 追踪
 
 #### 输出格式
+
 - **开发环境**: 彩色文本格式 (pino-pretty)
 - **生产环境**: JSON 结构化格式
 
 #### 存储策略
+
 ```typescript
 // 1. 控制台输出 (所有环境)
 // 2. 文件存储
@@ -168,6 +178,7 @@ logs/
 ```
 
 #### 请求日志内容
+
 ```typescript
 {
   traceId: string,           // 请求追踪ID (UUID)
@@ -185,19 +196,23 @@ logs/
 ```
 
 #### 日志配置
+
 ```typescript
 // logger.config.ts
 export const loggerConfig = {
   pinoHttp: {
     level: process.env.LOG_LEVEL || 'info',
-    transport: process.env.NODE_ENV !== 'production' ? {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'SYS:standard',
-        ignore: 'pid,hostname',
-      }
-    } : undefined,
+    transport:
+      process.env.NODE_ENV !== 'production'
+        ? {
+            target: 'pino-pretty',
+            options: {
+              colorize: true,
+              translateTime: 'SYS:standard',
+              ignore: 'pid,hostname',
+            },
+          }
+        : undefined,
     customProps: (req) => ({
       traceId: req.id,
     }),
@@ -220,17 +235,22 @@ export const loggerConfig = {
 ### 1.3 数据库模块
 
 #### ORM 选型 (待开发前确认)
+
 **候选方案**:
+
 - **TypeORM**: 成熟稳定，装饰器风格，社区大
 - **Prisma**: 类型安全强，开发体验好，性能优
 
 #### 数据库选型 (待开发前确认)
+
 **候选方案**:
+
 - **PostgreSQL**: 功能强大，推荐
 - **MySQL**: 普及度高
 - **支持多种**: 通过配置切换
 
 #### 迁移管理
+
 ```bash
 # 生成迁移文件
 npm run migration:generate -- -n CreateUserTable
@@ -243,6 +263,7 @@ npm run migration:revert
 ```
 
 #### Seeder 种子数据
+
 ```typescript
 // 需要初始化的数据
 1. 默认角色: Admin, User, Guest
@@ -252,6 +273,7 @@ npm run migration:revert
 ```
 
 #### 数据库配置示例
+
 ```typescript
 {
   type: 'postgres',
@@ -273,6 +295,7 @@ npm run migration:revert
 ### 1.4 统一异常处理
 
 #### 响应格式设计
+
 ```typescript
 // 成功响应
 {
@@ -300,6 +323,7 @@ npm run migration:revert
 ```
 
 #### 错误码设计
+
 ```typescript
 // 混合方式: HTTP状态码 + 业务错误码
 {
@@ -328,6 +352,7 @@ npm run migration:revert
 ```
 
 #### 异常类层级
+
 ```typescript
 // 自定义异常基类
 export class BusinessException extends HttpException {
@@ -352,6 +377,7 @@ export class UserNotFoundException extends BusinessException {
 ```
 
 #### 全局异常过滤器
+
 ```typescript
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -392,9 +418,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
 ### 1.5 统一响应拦截器
 
 #### Trace ID 生成
+
 使用 `uuid` 生成请求追踪ID，在中间件中注入到 `request.id`
 
 #### 响应拦截器
+
 ```typescript
 @Injectable()
 export class TransformInterceptor implements NestInterceptor {
@@ -402,7 +430,7 @@ export class TransformInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
 
     return next.handle().pipe(
-      map(data => ({
+      map((data) => ({
         success: true,
         code: 200,
         message: '操作成功',
@@ -422,6 +450,7 @@ export class TransformInterceptor implements NestInterceptor {
 ### 2.1 用户模块基础
 
 #### User Entity
+
 ```typescript
 @Entity('users')
 export class User {
@@ -463,10 +492,12 @@ export class User {
 ### 2.2 JWT 认证模块
 
 #### Token 策略
+
 - **Access Token**: 短期访问令牌 (可配置，默认 2 小时)
 - **Refresh Token**: 长期刷新令牌 (可配置，默认 30 天)
 
 #### Token 配置
+
 ```typescript
 // jwt.config.ts
 {
@@ -482,6 +513,7 @@ export class User {
 ```
 
 #### 认证流程
+
 ```typescript
 // 1. 登录
 POST /auth/login
@@ -501,11 +533,12 @@ Body: { refreshToken }
 ```
 
 #### Token 黑名单
+
 ```typescript
 // Redis 存储
-Key: `token:blacklist:${token}`
-Value: userId
-TTL: token剩余有效期
+Key: `token:blacklist:${token}`;
+Value: userId;
+TTL: token剩余有效期;
 ```
 
 ---
@@ -513,6 +546,7 @@ TTL: token剩余有效期
 ### 2.3 角色权限模块 (RBAC)
 
 #### 数据模型
+
 ```typescript
 // 用户 (User)
 {
@@ -541,28 +575,27 @@ post:*        - 文章所有权限
 ```
 
 #### 关系设计
+
 ```
 User (N) -> (N) Role (N) -> (N) Permission
 ```
 
 #### 预设角色
+
 ```typescript
 // Admin - 超级管理员
-permissions: ['*:*']  // 所有权限
+permissions: ['*:*']; // 所有权限
 
 // User - 普通用户
 permissions: [
   'post:create',
   'post:read',
-  'post:update:own',  // 只能更新自己的
+  'post:update:own', // 只能更新自己的
   'comment:*',
-]
+];
 
 // Guest - 游客
-permissions: [
-  'post:read',
-  'comment:read',
-]
+permissions: ['post:read', 'comment:read'];
 ```
 
 ---
@@ -570,6 +603,7 @@ permissions: [
 ### 2.4 权限守卫和装饰器
 
 #### 装饰器
+
 ```typescript
 // @Roles() - 角色检查
 @Roles('admin', 'moderator')
@@ -588,13 +622,17 @@ updatePost(@Param('id') id: number) {}
 ```
 
 #### 权限守卫
+
 ```typescript
 @Injectable()
 export class PermissionGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    const requiredPermissions = this.reflector.get('permissions', context.getHandler());
+    const requiredPermissions = this.reflector.get(
+      'permissions',
+      context.getHandler(),
+    );
 
     // 检查用户是否拥有所需权限
     return this.checkPermissions(user.permissions, requiredPermissions);
@@ -609,6 +647,7 @@ export class PermissionGuard implements CanActivate {
 ### 3.1 Swagger 文档集成
 
 #### 文档配置
+
 ```typescript
 const config = new DocumentBuilder()
   .setTitle('ACE NestJS Starter API')
@@ -622,6 +661,7 @@ const config = new DocumentBuilder()
 ```
 
 #### 文档内容
+
 - ✅ DTO 模型自动生成
 - ✅ 请求/响应示例数据
 - ✅ 错误码说明文档
@@ -629,6 +669,7 @@ const config = new DocumentBuilder()
 - ✅ JWT Token 认证集成
 
 #### 装饰器使用
+
 ```typescript
 @ApiTags('users')
 @ApiBearerAuth()
@@ -648,8 +689,8 @@ export class UserController {
         success: false,
         code: 40001,
         message: '用户名已存在',
-      }
-    }
+      },
+    },
   })
   @Post()
   create(@Body() createUserDto: CreateUserDto) {}
@@ -661,12 +702,13 @@ export class UserController {
 ### 3.2 全局数据验证管道
 
 #### ValidationPipe 配置
+
 ```typescript
 app.useGlobalPipes(
   new ValidationPipe({
-    whitelist: true,        // 自动删除非白名单属性
+    whitelist: true, // 自动删除非白名单属性
     forbidNonWhitelisted: true, // 存在非白名单属性时抛错
-    transform: true,        // 自动类型转换
+    transform: true, // 自动类型转换
     transformOptions: {
       enableImplicitConversion: true,
     },
@@ -675,6 +717,7 @@ app.useGlobalPipes(
 ```
 
 #### DTO 验证示例
+
 ```typescript
 export class CreateUserDto {
   @ApiProperty({ example: 'john_doe' })
@@ -705,6 +748,7 @@ export class CreateUserDto {
 ### 3.3 CORS 跨域配置
 
 #### 配置策略
+
 ```typescript
 // 开发环境 - 全开放
 app.enableCors({
@@ -729,12 +773,14 @@ app.enableCors({
 ### 4.1 Redis 缓存模块
 
 #### 使用场景
+
 - ✅ Token 黑名单
 - ✅ 限流记录
 - ✅ 验证码存储 (邮件/短信验证码)
 - 接口缓存 (可选)
 
 #### 配置
+
 ```typescript
 CacheModule.register({
   store: redisStore,
@@ -747,6 +793,7 @@ CacheModule.register({
 ```
 
 #### 验证码存储
+
 ```typescript
 // 存储验证码
 Key: `captcha:email:${email}`
@@ -764,15 +811,17 @@ TTL: 5 minutes
 ### 4.2 限流模块
 
 #### 全局限流配置
+
 ```typescript
 ThrottlerModule.forRoot({
-  ttl: 60,      // 时间窗口(秒)
-  limit: 100,   // 请求次数限制
+  ttl: 60, // 时间窗口(秒)
+  limit: 100, // 请求次数限制
   storage: new ThrottlerStorageRedisService(redisClient),
 });
 ```
 
 #### 自定义装饰器
+
 ```typescript
 // 跳过限流
 @SkipThrottle()
@@ -790,6 +839,7 @@ login() {}
 ### 4.3 健康检查模块
 
 #### 健康检查端点
+
 ```typescript
 @Get('health')
 @HealthCheck()
@@ -818,6 +868,7 @@ check() {
 ### 4.4 安全增强
 
 #### 推荐安全措施
+
 ```typescript
 // 1. Helmet - 安全HTTP头
 app.use(helmet());
@@ -846,6 +897,7 @@ app.use(helmet());
 #### 模板引擎: Handlebars
 
 #### 邮件模板
+
 ```
 templates/
 ├── email/
@@ -856,6 +908,7 @@ templates/
 ```
 
 #### 配置
+
 ```typescript
 {
   transport: {
@@ -881,6 +934,7 @@ templates/
 ```
 
 #### 使用示例
+
 ```typescript
 await this.emailService.send({
   to: user.email,
@@ -898,12 +952,14 @@ await this.emailService.send({
 ### 5.2 文件上传模块
 
 #### 支持功能
+
 - ✅ 单文件上传
 - ✅ 多文件上传
 - 文件类型验证
 - 文件大小限制
 
 #### 本地存储
+
 ```typescript
 // 存储路径
 uploads/
@@ -926,6 +982,7 @@ uploads/
 ```
 
 #### 文件记录
+
 ```typescript
 @Entity('files')
 export class File {
@@ -957,60 +1014,14 @@ export class File {
 
 ---
 
-### 5.3 国际化模块
-
-#### 支持语言
-- ✅ zh-CN (中文简体)
-- ✅ zh-TW (中文繁体)
-- ✅ en-US (英语)
-
-#### 语言文件
-```
-i18n/
-├── zh-CN/
-│   ├── common.json
-│   ├── errors.json
-│   └── validation.json
-├── zh-TW/
-│   └── ...
-└── en-US/
-    └── ...
-```
-
-#### 配置
-```typescript
-I18nModule.forRoot({
-  fallbackLanguage: 'zh-CN',
-  loaderOptions: {
-    path: path.join(__dirname, '/i18n/'),
-    watch: true,
-  },
-  resolvers: [
-    { use: QueryResolver, options: ['lang'] },
-    AcceptLanguageResolver,
-    new HeaderResolver(['x-lang']),
-  ],
-});
-```
-
-#### 使用示例
-```typescript
-// 在代码中
-this.i18n.t('errors.USER_NOT_FOUND', { lang: 'en-US' });
-
-// 在验证器中
-@IsNotEmpty({ message: i18nValidationMessage('validation.NOT_EMPTY') })
-username: string;
-```
-
----
-
 ### 5.4 WebSocket 模块
 
 #### 使用场景
+
 - ✅ 实时通知推送
 
 #### Socket.io 配置
+
 ```typescript
 @WebSocketGateway({
   cors: {
@@ -1032,16 +1043,15 @@ export class NotificationGateway {
 ```
 
 #### 事件示例
+
 ```typescript
 // 服务端推送通知
-this.server
-  .to(`user_${userId}`)
-  .emit('notification', {
-    type: 'system',
-    title: '系统通知',
-    content: '您有新消息',
-    timestamp: Date.now(),
-  });
+this.server.to(`user_${userId}`).emit('notification', {
+  type: 'system',
+  title: '系统通知',
+  content: '您有新消息',
+  timestamp: Date.now(),
+});
 ```
 
 ---
@@ -1049,12 +1059,14 @@ this.server
 ### 5.5 任务调度模块
 
 #### 支持类型
+
 - ✅ Cron 定时任务 (表达式调度)
 - ✅ Interval 间隔任务 (固定间隔)
 - ✅ Timeout 延迟任务 (延迟执行)
 - ✅ 动态任务 (运行时添加/删除)
 
 #### 示例
+
 ```typescript
 @Injectable()
 export class TasksService {
@@ -1094,6 +1106,7 @@ export class TasksService {
 ### 5.6 社交登录模块
 
 #### 支持平台
+
 - ✅ Google OAuth
 - ✅ GitHub OAuth
 - ✅ 微信登录
@@ -1130,11 +1143,13 @@ class WechatOAuthStrategy implements IOAuthStrategy {
 ```
 
 #### 账号关联逻辑
+
 - ✅ 自动创建用户 (首次登录)
 - ✅ 邮箱匹配 (相同邮箱自动关联)
 - 一个用户可绑定多个社交账号
 
 #### 数据模型
+
 ```typescript
 @Entity('oauth_accounts')
 export class OAuthAccount {
@@ -1150,7 +1165,7 @@ export class OAuthAccount {
   @Column({ nullable: true })
   email: string;
 
-  @ManyToOne(() => User, user => user.oauthAccounts)
+  @ManyToOne(() => User, (user) => user.oauthAccounts)
   user: User;
 
   @Column('json')
@@ -1162,6 +1177,7 @@ export class OAuthAccount {
 ```
 
 #### OAuth 流程
+
 ```typescript
 // 1. 获取授权URL
 GET /auth/oauth/:provider
@@ -1180,6 +1196,7 @@ Response: { accessToken, refreshToken, user }
 ### 6.1 Docker 配置
 
 #### docker-compose.yml
+
 ```yaml
 version: '3.8'
 
@@ -1189,7 +1206,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
       - postgres
       - redis
@@ -1203,7 +1220,7 @@ services:
   postgres:
     image: postgres:15-alpine
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -1214,7 +1231,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
 
@@ -1228,12 +1245,14 @@ volumes:
 ### 6.2 E2E 测试完善
 
 #### 测试覆盖范围
+
 - ✅ 认证流程 (注册/登录/刷新令牌/登出)
 - ✅ CRUD 操作 (用户/角色/权限)
 - ✅ 权限检查 (角色权限验证)
 - ✅ 关键业务流程
 
 #### 测试示例
+
 ```typescript
 describe('Auth (e2e)', () => {
   let app: INestApplication;
@@ -1275,6 +1294,7 @@ describe('Auth (e2e)', () => {
 #### Git Hooks: Husky + Lint-staged
 
 #### Pre-commit Hook
+
 ```json
 // .husky/pre-commit
 #!/bin/sh
@@ -1284,19 +1304,18 @@ npx lint-staged
 ```
 
 #### Lint-staged 配置
+
 ```json
 // package.json
 {
   "lint-staged": {
-    "*.ts": [
-      "eslint --fix",
-      "prettier --write"
-    ]
+    "*.ts": ["eslint --fix", "prettier --write"]
   }
 }
 ```
 
 #### Commitlint 规范: Conventional Commits
+
 ```
 <type>(<scope>): <subject>
 
@@ -1320,6 +1339,7 @@ docs(readme): 更新安装说明
 ## 第七阶段：文档与交付
 
 ### 7.1 README.md
+
 - 项目介绍
 - 功能特性
 - 快速开始 (安装、配置、运行)
@@ -1328,6 +1348,7 @@ docs(readme): 更新安装说明
 - 技术栈
 
 ### 7.2 部署文档
+
 - Docker 部署
 - 传统部署
 - 环境配置
@@ -1335,6 +1356,7 @@ docs(readme): 更新安装说明
 - Nginx 配置
 
 ### 7.3 开发指南
+
 - 项目结构说明
 - 开发规范
 - 如何添加新模块
@@ -1342,6 +1364,7 @@ docs(readme): 更新安装说明
 - 测试指南
 
 ### 7.4 .env.example
+
 ```bash
 # 应用配置
 NODE_ENV=development
@@ -1399,6 +1422,7 @@ WECHAT_APP_SECRET=
 ## 📊 开发优先级总结
 
 ### P0 - 必须完成 (MVP)
+
 1. 配置管理
 2. 日志模块
 3. 数据库模块
@@ -1410,6 +1434,7 @@ WECHAT_APP_SECRET=
 9. Docker 配置
 
 ### P1 - 重要功能
+
 1. Redis 缓存
 2. 限流
 3. 健康检查
@@ -1419,10 +1444,10 @@ WECHAT_APP_SECRET=
 7. 代码质量工具
 
 ### P2 - 增强功能
-1. 国际化
-2. WebSocket
-3. 任务调度
-4. 社交登录
+
+1. WebSocket
+2. 任务调度
+3. 社交登录
 
 ---
 

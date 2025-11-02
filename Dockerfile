@@ -49,7 +49,6 @@ RUN pnpm install --prod --frozen-lockfile && \
 
 # Copy built application from builder stage
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/src/modules/i18n/resources ./dist/src/modules/i18n/resources
 
 # Copy necessary files
 COPY --chown=nestjs:nodejs .env.example .env.example

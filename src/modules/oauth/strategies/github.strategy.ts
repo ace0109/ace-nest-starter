@@ -34,7 +34,7 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       email: emails?.[0]?.value,
       name: displayName || username,
       avatar: photos?.[0]?.value,
-      raw: profile._json,
+      raw: profile,
     };
 
     // 将处理后的 profile 传递给下一个中间件

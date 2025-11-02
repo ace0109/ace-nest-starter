@@ -62,7 +62,7 @@ export class OAuthService {
             email: profile.email,
             name: profile.name,
             avatar: profile.avatar,
-            raw: profile.raw as Prisma.JsonValue,
+            raw: profile.raw ?? Prisma.JsonNull,
           },
         });
 
@@ -93,14 +93,11 @@ export class OAuthService {
 
       // 5. 生成 JWT tokens
       const payload = { sub: user.id, email: user.email };
-      const accessToken = this.jwtService.sign(payload, {
-        secret: this.configService.get<string>('jwt.access.secret'),
-        expiresIn: this.configService.get<string>('jwt.access.expiresIn'),
-      });
+      const accessToken = this.jwtService.sign(payload);
 
       const refreshToken = this.jwtService.sign(payload, {
         secret: this.configService.get<string>('jwt.refresh.secret'),
-        expiresIn: this.configService.get<string>('jwt.refresh.expiresIn'),
+        expiresIn: '7d',
       });
 
       return {
@@ -286,7 +283,7 @@ export class OAuthService {
             email: profile.email,
             name: profile.name,
             avatar: profile.avatar,
-            raw: profile.raw as Prisma.JsonValue,
+            raw: profile.raw ?? Prisma.JsonNull,
           },
         },
       },
@@ -308,7 +305,7 @@ export class OAuthService {
         email: profile.email,
         name: profile.name,
         avatar: profile.avatar,
-        raw: profile.raw as Prisma.JsonValue,
+        raw: profile.raw ?? Prisma.JsonNull,
       },
     });
   }

@@ -1489,88 +1489,6 @@ curl -X POST http://localhost:3000/test/email/verification \
 
 ---
 
-#### 5.3 国际化模块 ⭐ ✅
-
-**优先级**: P2 (增强)
-**状态**: 已完成
-
-**实现内容**:
-
-- [x] 安装 `nestjs-i18n`
-- [x] 配置语言文件 (zh-CN, zh-TW, en-US)
-- [x] 错误消息国际化
-- [x] 验证消息国际化
-
-**已实现功能**:
-
-- ✅ 集成 nestjs-i18n 库
-- ✅ 创建多语言资源文件:
-  - en-US (英文)
-  - zh-CN (简体中文)
-  - zh-TW (繁体中文)
-- ✅ I18nService 服务类:
-  - 基础翻译功能
-  - 批量翻译
-  - 命名空间翻译
-  - 数字格式化（货币、百分比）
-  - 日期格式化
-  - 相对时间显示
-  - 分页信息翻译
-- ✅ 国际化验证管道 (I18nValidationPipe)
-- ✅ 国际化异常过滤器 (I18nExceptionFilter)
-- ✅ 翻译资源内容:
-  - 通用词汇
-  - 验证消息
-  - 认证授权消息
-  - HTTP错误状态码
-  - 字段名称
-- ✅ 语言切换支持:
-  - Query 参数 (lang, locale, l)
-  - Header (x-lang, x-locale)
-  - Accept-Language
-- ✅ 测试控制器验证所有功能
-
-**验证步骤**:
-
-```bash
-# 1. 获取当前语言
-curl http://localhost:3000/test/i18n/current-language
-
-# 2. 测试中文翻译
-curl "http://localhost:3000/test/i18n/translate?key=common.success&lang=zh-CN"
-
-# 3. 测试带参数的翻译
-curl "http://localhost:3000/test/i18n/translate-with-args?field=用户名&min=3"
-
-# 4. 测试错误消息国际化
-curl http://localhost:3000/test/i18n/errors/unauthorized \
-  -H "Accept-Language: zh-CN"
-
-# 5. 测试数字格式化
-curl "http://localhost:3000/test/i18n/format-number?number=12345.678&currency=CNY" \
-  -H "Accept-Language: zh-CN"
-
-# 6. 测试日期格式化
-curl http://localhost:3000/test/i18n/format-date \
-  -H "Accept-Language: zh-CN"
-```
-
-**文件清单**:
-
-- `src/modules/i18n/i18n.module.ts` (35行)
-- `src/modules/i18n/i18n.service.ts` (175行)
-- `src/modules/i18n/pipes/i18n-validation.pipe.ts` (206行)
-- `src/modules/i18n/filters/i18n-exception.filter.ts` (289行)
-- `src/modules/i18n/i18n-test.controller.ts` (393行) - 测试控制器
-- `src/modules/i18n/resources/en-US/translation.json` (212行)
-- `src/modules/i18n/resources/zh-CN/translation.json` (212行)
-- `src/modules/i18n/resources/zh-TW/translation.json` (212行)
-- `src/modules/i18n/index.ts` (4行)
-- 更新 `package.json` build 脚本 (复制资源文件)
-- 更新 `nest-cli.json` (配置资源文件)
-
----
-
 #### 5.4 WebSocket 模块 ⭐ ✅
 
 **优先级**: P2 (增强)
@@ -1613,7 +1531,7 @@ curl http://localhost:3000/test/i18n/format-date \
 **验证步骤**:
 
 ```bash
-# 1. 启动应用（注意：需要先修复 i18n 模块的 TypeScript 错误）
+# 1. 启动应用
 pnpm start:dev
 
 # 2. 查看 Swagger 文档中的 websocket 相关 API
@@ -1968,7 +1886,6 @@ curl -X POST http://localhost:3000/websocket/broadcast \
 - ✅ 用户管理测试（获取资料、更新资料）
 - ✅ 健康检查测试
 - ✅ Swagger 文档测试
-- ✅ 国际化测试
 - ✅ 限流测试
 
 **文件清单**:
