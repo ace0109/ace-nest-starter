@@ -25,6 +25,8 @@ import { PermissionsModule } from './modules/permissions';
 import { EmailModule } from './modules/email';
 import { UploadModule } from './modules/upload';
 import { I18nModule } from './modules/i18n';
+import { WebSocketModule } from './modules/websocket';
+import { SchedulerModule } from './modules/scheduler';
 import { JwtAuthGuard } from './common/guards';
 
 @Module({
@@ -54,6 +56,10 @@ import { JwtAuthGuard } from './common/guards';
     UploadModule,
     // 国际化模块
     I18nModule,
+    // WebSocket模块
+    WebSocketModule,
+    // 任务调度模块
+    SchedulerModule,
     // 业务模块
     UsersModule,
     AuthModule,

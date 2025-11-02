@@ -27,15 +27,48 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Run `pnpm build` to verify TypeScript compilation
    - Run tests if applicable (`pnpm test`)
    - Code MUST have 0 ESLint errors and 0 TypeScript errors
-6. **Update DEVELOPMENT_PLAN.md** - After completing each task, you MUST update the development plan document:
+
+## 📝 DOCUMENTATION UPDATE REQUIREMENT (CRITICAL - 绝对必须)
+
+**🔴 MANDATORY DOCUMENTATION UPDATE - THIS IS NOT OPTIONAL 🔴**
+
+After completing EACH module/task, you **MUST** update `DEVELOPMENT_PLAN.md` immediately. This is a **CRITICAL REQUIREMENT** and failure to do so is considered **TASK INCOMPLETE**.
+
+### Documentation Update Checklist (每个模块完成后必须执行):
+1. **Update Task Status** ✅
    - Change task status from ⭐ to ✅ (e.g., `#### 1.3 数据库模块 ⭐⭐⭐ ✅`)
    - Update `**状态**: 已完成`
-   - Add `**已实现功能**` section listing what was built
+
+2. **Add Implementation Details** 📋
+   - Add `**已实现功能**` section listing ALL features built
+   - Include technical decisions made
+   - Document any deviations from original plan
+
+3. **Provide Verification Steps** 🧪
    - Add detailed `**验证步骤**` with actual commands users can run
-   - Update `**文件清单**` with created/modified files and line counts
-   - Update any technology decisions (e.g., ORM choice, database type)
-   - Update the `**Current Status**` to reflect latest completed task
-   - This documentation update is MANDATORY and part of task completion
+   - Include expected outputs
+   - Cover all major functionality
+
+4. **Update File List** 📁
+   - Update `**文件清单**` with ALL created/modified files
+   - Include line counts for each file
+   - Note any configuration file changes
+
+5. **Update Progress Tracking** 📊
+   - Update the `**Current Status**` at the bottom of the file
+   - Update completed task count (e.g., `**已完成任务**: 21/29`)
+   - Update progress percentage (e.g., `**进度**: 72%`)
+   - Update `**下一步**` to indicate next task
+
+### ⚠️ IMPORTANT REMINDERS:
+- **Documentation update is NOT optional** - It's part of task completion
+- **A task is NOT complete until documentation is updated** - No exceptions
+- **Update documentation IMMEDIATELY after code completion** - Not later
+- **Each small module needs documentation** - Including sub-tasks like 5.1, 5.2, 5.3
+- **Failure to update = Task incomplete** - Must go back and update before proceeding
+
+**违反此规则将被视为任务未完成！必须更新文档！**
+(Violating this rule means the task is considered incomplete! Documentation MUST be updated!)
 
 **Current Development Status**: Check `DEVELOPMENT_PLAN.md` for the latest completed tasks and next task to work on.
 

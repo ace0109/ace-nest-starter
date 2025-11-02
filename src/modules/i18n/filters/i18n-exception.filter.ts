@@ -128,9 +128,9 @@ export class I18nExceptionFilter implements ExceptionFilter {
       // 检查消息是否匹配已知的 key
       for (const key of knownKeys) {
         if (message.toLowerCase().includes(key.split('.')[1].toLowerCase())) {
-          const translated = i18n.t(key) as string;
+          const translated = i18n.t(key);
           if (translated !== key) {
-            return translated;
+            return translated as string;
           }
         }
       }
@@ -138,9 +138,9 @@ export class I18nExceptionFilter implements ExceptionFilter {
       // 尝试直接翻译
       const directTranslation = i18n.t(message, {
         defaultValue: message,
-      }) as string;
+      });
       if (directTranslation !== message) {
-        return directTranslation;
+        return directTranslation as string;
       }
 
       // 如果是数组消息，翻译每一项
@@ -173,8 +173,8 @@ export class I18nExceptionFilter implements ExceptionFilter {
 
     try {
       const key = `error.${status}`;
-      const translated = i18n.t(key) as string;
-      return translated !== key ? translated : null;
+      const translated = i18n.t(key);
+      return translated !== key ? (translated as string) : null;
     } catch {
       return null;
     }
@@ -275,9 +275,9 @@ export class I18nExceptionFilter implements ExceptionFilter {
           }
         }
 
-        const translated = i18n.t(key, args) as string;
+        const translated = i18n.t(key, args);
         if (translated !== key) {
-          return translated;
+          return translated as string;
         }
       }
     }
