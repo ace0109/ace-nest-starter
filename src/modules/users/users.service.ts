@@ -34,45 +34,24 @@ export class UsersService {
    * 创建用户
    */
   async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
-    // 检查邮箱是否已存在
-    const existingEmail = await this.prisma.user.findUnique({
-      where: { email: createUserDto.email },
-    });
-    if (existingEmail) {
-      throw new ConflictException('Email already exists');
-    }
-
-    // 检查用户名是否已存在
-    const existingUsername = await this.prisma.user.findUnique({
-      where: { username: createUserDto.username },
-    });
-    if (existingUsername) {
-      throw new ConflictException('Username already exists');
-    }
-
-    // 检查手机号是否已存在（如果提供）
-    if (createUserDto.phone) {
-      const existingPhone = await this.prisma.user.findUnique({
-        where: { phone: createUserDto.phone },
-      });
-      if (existingPhone) {
-        throw new ConflictException('Phone number already exists');
-      }
-    }
-
     // 加密密码
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
-    // 创建用户
-    const user = await this.prisma.user.create({
-      data: {
-        ...createUserDto,
-        password: hashedPassword,
-      },
-    });
+    try {
+      // 创建用户
+      const user = await this.prisma.user.create({
+        data: {
+          ...createUserDto,
+          password: hashedPassword,
+        },
+      });
 
-    // 移除密码字段
-    return this.excludePassword(user);
+      // 移除密码字段
+      return this.excludePassword(user);
+    } catch (error) {
+      this.handleUniqueConstraintError(error);
+      throw error;
+    }
   }
 
   /**
@@ -182,26 +161,17 @@ export class UsersService {
     // 检查用户是否存在
     await this.findOne(id);
 
-    // 检查手机号是否已存在（如果提供）
-    if (updateUserDto.phone) {
-      const existingPhone = await this.prisma.user.findFirst({
-        where: {
-          phone: updateUserDto.phone,
-          id: { not: id },
-          deletedAt: null,
-        },
+    try {
+      const user = await this.prisma.user.update({
+        where: { id },
+        data: updateUserDto,
       });
-      if (existingPhone) {
-        throw new ConflictException('Phone number already exists');
-      }
+
+      return this.excludePassword(user);
+    } catch (error) {
+      this.handleUniqueConstraintError(error);
+      throw error;
     }
-
-    const user = await this.prisma.user.update({
-      where: { id },
-      data: updateUserDto,
-    });
-
-    return this.excludePassword(user);
   }
 
   /**
@@ -287,6 +257,31 @@ export class UsersService {
     });
 
     return this.excludePassword(restoredUser);
+  }
+
+  /**
+   * 处理唯一约束异常
+   */
+  private handleUniqueConstraintError(error: unknown): void {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      const target = Array.isArray(error.meta?.target)
+        ? error.meta?.target[0]
+        : (error.meta?.target as string | undefined);
+
+      switch (target) {
+        case 'email':
+          throw new ConflictException('Email already exists');
+        case 'username':
+          throw new ConflictException('Username already exists');
+        case 'phone':
+          throw new ConflictException('Phone number already exists');
+        default:
+          throw new ConflictException('Unique constraint violated');
+      }
+    }
   }
 
   /**

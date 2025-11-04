@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
@@ -44,6 +44,8 @@ export type { LoginResult };
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
@@ -211,25 +213,35 @@ export class AuthService {
       email: payload.email,
     };
 
-    const refreshExpiresInStr =
-      this.configService.get<string>('jwt.refreshExpiresIn') || '7d';
+    const refreshExpiresInConfig = this.configService.get<string | number>(
+      'jwt.refreshExpiresIn',
+      '7d',
+    );
+
+    const refreshSecret = this.configService.get<string>('jwt.refreshSecret');
+    if (!refreshSecret) {
+      this.logger.error('Refresh token secret is not configured');
+      throw new Error('Refresh token secret is not configured');
+    }
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload),
       this.jwtService.signAsync(refreshPayload, {
-        secret:
-          this.configService.get<string>('jwt.refreshSecret') ||
-          'default-refresh-secret',
-        expiresIn: refreshExpiresInStr as unknown as number,
+        secret: refreshSecret,
+        expiresIn: refreshExpiresInConfig,
       }),
     ]);
 
     // 获取过期时间（秒）
     const accessExpiresIn = this.parseExpireTime(
-      this.configService.get<string>('jwt.accessExpiresIn', '15m'),
+      this.configService.get<string | number>('jwt.accessExpiresIn', '15m'),
+      'access token',
+      15 * 60,
     );
     const refreshExpiresIn = this.parseExpireTime(
-      this.configService.get<string>('jwt.refreshExpiresIn', '7d'),
+      this.configService.get<string | number>('jwt.refreshExpiresIn', '7d'),
+      'refresh token',
+      7 * 24 * 60 * 60,
     );
 
     return {
@@ -244,17 +256,56 @@ export class AuthService {
    * 解析过期时间字符串为秒
    * 例如: '15m' -> 900, '7d' -> 604800
    */
-  private parseExpireTime(time: string): number {
-    const unit = time.slice(-1);
-    const value = parseInt(time.slice(0, -1), 10);
+  private parseExpireTime(
+    value: string | number | undefined,
+    context: string,
+    fallbackSeconds: number,
+  ): number {
+    const parsed = this.tryParseExpireTime(value);
+    if (parsed !== null) {
+      return parsed;
+    }
 
-    const unitToSeconds: Record<string, number> = {
-      s: 1,
-      m: 60,
-      h: 3600,
-      d: 86400,
-    };
+    this.logger.warn(
+      `Invalid ${context} expiration value "${value}", falling back to ${fallbackSeconds} seconds`,
+    );
+    return fallbackSeconds;
+  }
 
-    return value * (unitToSeconds[unit] || 1);
+  private tryParseExpireTime(
+    value: string | number | undefined,
+  ): number | null {
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+      return Math.floor(value);
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return null;
+      }
+
+      if (/^\d+$/.test(trimmed)) {
+        return parseInt(trimmed, 10);
+      }
+
+      const match = trimmed.match(/^(\d+)([smhd])$/i);
+      if (!match) {
+        return null;
+      }
+
+      const amount = parseInt(match[1], 10);
+      const unit = match[2].toLowerCase();
+      const unitToSeconds: Record<string, number> = {
+        s: 1,
+        m: 60,
+        h: 3600,
+        d: 86400,
+      };
+
+      return amount * unitToSeconds[unit];
+    }
+
+    return null;
   }
 }

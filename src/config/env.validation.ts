@@ -14,6 +14,14 @@ export const envSchema = z.object({
 
   // ==================== 数据库配置 ====================
   DATABASE_URL: z.string().url().min(1, 'DATABASE_URL is required'),
+  PRISMA_LOG_LEVELS: z
+    .string()
+    .optional()
+    .transform((val) =>
+      val
+        ? val.split(',').map((level) => level.trim()).filter((level) => level)
+        : undefined,
+    ),
 
   // ==================== JWT 配置 ====================
   JWT_ACCESS_SECRET: z

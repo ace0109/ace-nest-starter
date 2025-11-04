@@ -8,22 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { FileCategory, FileResponse, UploadFileDto } from './dto/upload.dto';
 import { join } from 'path';
 import { existsSync, unlinkSync, createReadStream } from 'fs';
-import { v4 as uuidv4 } from 'uuid';
-
-interface StoredFile {
-  id: string;
-  originalName: string;
-  filename: string;
-  path: string;
-  mimeType: string;
-  size: number;
-  category: FileCategory;
-  description?: string;
-  isPublic: boolean;
-  uploaderId?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { PrismaService } from '../../common/prisma';
 
 /**
  * 文件上传服务
@@ -34,10 +19,11 @@ export class UploadService {
   private readonly logger = new Logger(UploadService.name);
   private readonly baseUploadPath: string;
   private readonly baseUrl: string;
-  // 模拟数据库存储（实际项目中应该使用真实数据库）
-  private readonly fileStorage = new Map<string, StoredFile>();
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     this.baseUploadPath = join(
       process.cwd(),
       this.configService.get<string>('upload.path', './uploads'),
@@ -51,16 +37,15 @@ export class UploadService {
   /**
    * 处理单文件上传
    */
-  uploadFile(
+  async uploadFile(
     file: Express.Multer.File,
     dto: UploadFileDto,
     userId?: string,
-  ): FileResponse {
+  ): Promise<FileResponse> {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
 
-    // 从文件路径中提取相对路径
     const relativePath = file.path
       .replace(this.baseUploadPath, '')
       .replace(/\\/g, '/');
@@ -68,27 +53,21 @@ export class UploadService {
       ? relativePath.substring(1)
       : relativePath;
 
-    // 根据 MIME 类型自动分类
     const category = dto.category || this.detectFileCategory(file.mimetype);
 
-    // 创建文件记录
-    const fileRecord: StoredFile = {
-      id: uuidv4(),
-      originalName: file.originalname,
-      filename: file.filename,
-      path: cleanPath,
-      mimeType: file.mimetype,
-      size: file.size,
-      category,
-      description: dto.description,
-      isPublic: dto.isPublic ?? false,
-      uploaderId: userId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    // 保存到存储（实际项目中应该保存到数据库）
-    this.fileStorage.set(fileRecord.id, fileRecord);
+    const fileRecord = await this.fileRepository.create({
+      data: {
+        originalName: file.originalname,
+        filename: file.filename,
+        path: cleanPath,
+        mimeType: file.mimetype,
+        size: file.size,
+        category,
+        description: dto.description,
+        isPublic: dto.isPublic ?? false,
+        uploaderId: userId,
+      },
+    });
 
     this.logger.log(
       `File uploaded: ${file.originalname} -> ${fileRecord.path} (${this.formatFileSize(file.size)})`,
@@ -100,16 +79,16 @@ export class UploadService {
   /**
    * 处理多文件上传
    */
-  uploadMultipleFiles(
+  async uploadMultipleFiles(
     files: Express.Multer.File[],
     dto: UploadFileDto,
     userId?: string,
-  ): {
+  ): Promise<{
     files: FileResponse[];
     successCount: number;
     failedCount: number;
     errors?: Array<{ filename: string; error: string }>;
-  } {
+  }> {
     if (!files || files.length === 0) {
       throw new BadRequestException('No files uploaded');
     }
@@ -119,14 +98,13 @@ export class UploadService {
 
     for (const file of files) {
       try {
-        const fileResponse = this.uploadFile(file, dto, userId);
+        const fileResponse = await this.uploadFile(file, dto, userId);
         results.push(fileResponse);
       } catch (error) {
         errors.push({
           filename: file.originalname,
           error: error instanceof Error ? error.message : 'Unknown error',
         });
-        // 删除上传失败的文件
         this.deletePhysicalFile(file.path);
       }
     }
@@ -142,14 +120,15 @@ export class UploadService {
   /**
    * 获取文件信息
    */
-  getFileById(fileId: string, userId?: string): FileResponse {
-    const file = this.fileStorage.get(fileId);
+  async getFileById(fileId: string, userId?: string): Promise<FileResponse> {
+    const file = await this.fileRepository.findUnique({
+      where: { id: fileId },
+    });
 
     if (!file) {
       throw new NotFoundException(`File not found: ${fileId}`);
     }
 
-    // 检查权限：只有公开文件或文件所有者可以访问
     if (!file.isPublic && file.uploaderId !== userId) {
       throw new NotFoundException(`File not found: ${fileId}`);
     }
@@ -160,59 +139,60 @@ export class UploadService {
   /**
    * 获取文件列表
    */
-  getFileList(
+  async getFileList(
     userId?: string,
     category?: FileCategory,
     page = 1,
     limit = 20,
     search?: string,
-  ): {
+  ): Promise<{
     files: FileResponse[];
     total: number;
     page: number;
     totalPages: number;
-  } {
-    // 过滤文件
-    const filteredFiles = Array.from(this.fileStorage.values()).filter(
-      (file) => {
-        // 只返回用户自己的文件或公开文件
-        if (!file.isPublic && file.uploaderId !== userId) {
-          return false;
-        }
+  }> {
+    const normalizedPage = Math.max(1, page ?? 1);
+    const normalizedLimit = Math.max(1, Math.min(limit ?? 20, 100));
 
-        // 按分类过滤
-        if (category && file.category !== category) {
-          return false;
-        }
+    const filters: Array<Record<string, unknown>> = [];
 
-        // 搜索过滤
-        if (search) {
-          const searchLower = search.toLowerCase();
-          return (
-            file.originalName.toLowerCase().includes(searchLower) ||
-            (file.description &&
-              file.description.toLowerCase().includes(searchLower))
-          );
-        }
+    if (userId) {
+      filters.push({ OR: [{ isPublic: true }, { uploaderId: userId }] });
+    } else {
+      filters.push({ OR: [{ isPublic: true }, { uploaderId: null }] });
+    }
 
-        return true;
-      },
-    );
+    if (category) {
+      filters.push({ category });
+    }
 
-    // 排序（按创建时间倒序）
-    filteredFiles.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    if (search) {
+      filters.push({
+        OR: [
+          { originalName: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ],
+      });
+    }
 
-    // 分页
-    const total = filteredFiles.length;
-    const totalPages = Math.ceil(total / limit);
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedFiles = filteredFiles.slice(startIndex, endIndex);
+    const where = filters.length === 1 ? filters[0] : { AND: filters };
+
+    const [files, total] = await this.prisma.$transaction([
+      this.fileRepository.findMany({
+        where,
+        skip: (normalizedPage - 1) * normalizedLimit,
+        take: normalizedLimit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.fileRepository.count({ where }),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(total / normalizedLimit));
 
     return {
-      files: paginatedFiles.map((file) => this.toFileResponse(file)),
+      files: files.map((file) => this.toFileResponse(file)),
       total,
-      page,
+      page: normalizedPage,
       totalPages,
     };
   }
@@ -220,24 +200,22 @@ export class UploadService {
   /**
    * 删除文件
    */
-  deleteFile(fileId: string, userId?: string): void {
-    const file = this.fileStorage.get(fileId);
+  async deleteFile(fileId: string, userId?: string): Promise<void> {
+    const file = await this.fileRepository.findUnique({ where: { id: fileId } });
 
     if (!file) {
       throw new NotFoundException(`File not found: ${fileId}`);
     }
 
-    // 检查权限：只有文件所有者可以删除
     if (file.uploaderId !== userId) {
       throw new NotFoundException(`File not found: ${fileId}`);
     }
 
-    // 删除物理文件
     const fullPath = join(this.baseUploadPath, file.path);
-    this.deletePhysicalFile(fullPath);
 
-    // 删除记录
-    this.fileStorage.delete(fileId);
+    await this.fileRepository.delete({ where: { id: fileId } });
+
+    this.deletePhysicalFile(fullPath);
 
     this.logger.log(`File deleted: ${file.originalName} (${fileId})`);
   }
@@ -245,20 +223,20 @@ export class UploadService {
   /**
    * 批量删除文件
    */
-  deleteMultipleFiles(
+  async deleteMultipleFiles(
     fileIds: string[],
     userId?: string,
-  ): {
+  ): Promise<{
     successCount: number;
     failedCount: number;
     errors?: Array<{ fileId: string; error: string }>;
-  } {
+  }> {
     const errors: Array<{ fileId: string; error: string }> = [];
     let successCount = 0;
 
     for (const fileId of fileIds) {
       try {
-        this.deleteFile(fileId, userId);
+        await this.deleteFile(fileId, userId);
         successCount++;
       } catch (error) {
         errors.push({
@@ -278,8 +256,8 @@ export class UploadService {
   /**
    * 获取文件流（用于下载）
    */
-  getFileStream(fileId: string, userId?: string) {
-    const file = this.getFileById(fileId, userId);
+  async getFileStream(fileId: string, userId?: string) {
+    const file = await this.getFileById(fileId, userId);
     const fullPath = join(this.baseUploadPath, file.path);
 
     if (!existsSync(fullPath)) {
@@ -289,6 +267,102 @@ export class UploadService {
     return {
       stream: createReadStream(fullPath),
       file,
+    };
+  }
+
+  /**
+   * 获取存储统计信息
+   */
+  async getStorageStats(userId?: string): Promise<{
+    totalFiles: number;
+    totalSize: number;
+    formattedSize: string;
+    byCategory: Record<FileCategory, { count: number; size: number }>;
+  }> {
+    const where = userId ? { uploaderId: userId } : {};
+
+    const [totalFiles, sizeAggregate, grouped] = await this.prisma.$transaction([
+      this.fileRepository.count({ where }),
+      this.fileRepository.aggregate({ where, _sum: { size: true } }),
+      this.fileRepository.groupBy({
+        where,
+        by: ['category'],
+        _count: { _all: true },
+        _sum: { size: true },
+      }),
+    ]);
+
+    const byCategory: Record<FileCategory, { count: number; size: number }> = {
+      [FileCategory.AVATAR]: { count: 0, size: 0 },
+      [FileCategory.DOCUMENT]: { count: 0, size: 0 },
+      [FileCategory.IMAGE]: { count: 0, size: 0 },
+      [FileCategory.VIDEO]: { count: 0, size: 0 },
+      [FileCategory.AUDIO]: { count: 0, size: 0 },
+      [FileCategory.OTHER]: { count: 0, size: 0 },
+    };
+
+    for (const group of grouped) {
+      const key = group.category as FileCategory;
+      if (byCategory[key]) {
+        byCategory[key].count = group._count._all;
+        byCategory[key].size = group._sum.size ?? 0;
+      }
+    }
+
+    const totalSize = sizeAggregate._sum.size ?? 0;
+
+    return {
+      totalFiles,
+      totalSize,
+      formattedSize: this.formatFileSize(totalSize),
+      byCategory,
+    };
+  }
+
+  /**
+   * 清理过期文件（示例：清理30天前的临时文件）
+   */
+  async cleanupExpiredFiles(daysOld = 30): Promise<{
+    deletedCount: number;
+    freedSpace: number;
+  }> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+
+    const filesToDelete = await this.fileRepository.findMany({
+      where: {
+        uploaderId: null,
+        createdAt: { lt: cutoffDate },
+      },
+    });
+
+    if (!filesToDelete.length) {
+      return { deletedCount: 0, freedSpace: 0 };
+    }
+
+    const ids = filesToDelete.map((file) => file.id);
+    const freedSpace = filesToDelete.reduce((sum, file) => sum + file.size, 0);
+
+    await this.fileRepository.deleteMany({
+      where: { id: { in: ids } },
+    });
+
+    for (const file of filesToDelete) {
+      try {
+        const fullPath = join(this.baseUploadPath, file.path);
+        this.deletePhysicalFile(fullPath);
+      } catch (error) {
+        this.logger.error(`Failed to cleanup file: ${file.id}`, error);
+      }
+    }
+
+    this.logger.log(
+      `Cleaned up ${filesToDelete.length} expired files, freed ${this.formatFileSize(freedSpace)}`,
+    );
+
+    return {
+      deletedCount: filesToDelete.length,
+      freedSpace,
     };
   }
 
@@ -328,6 +402,10 @@ export class UploadService {
     }
   }
 
+  private get fileRepository(): any {
+    return (this.prisma as any).file;
+  }
+
   /**
    * 格式化文件大小
    */
@@ -341,7 +419,20 @@ export class UploadService {
   /**
    * 转换为响应格式
    */
-  private toFileResponse(file: StoredFile): FileResponse {
+  private toFileResponse(file: {
+    id: string;
+    originalName: string;
+    filename: string;
+    path: string;
+    mimeType: string;
+    size: number;
+    category: string;
+    description?: string | null;
+    isPublic: boolean;
+    uploaderId?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): FileResponse {
     const url = `${this.baseUrl}/uploads/${file.path}`;
 
     return {
@@ -352,94 +443,12 @@ export class UploadService {
       url,
       mimeType: file.mimeType,
       size: file.size,
-      category: file.category,
-      description: file.description,
+      category: file.category as FileCategory,
+      description: file.description ?? undefined,
       isPublic: file.isPublic,
-      uploaderId: file.uploaderId,
+      uploaderId: file.uploaderId ?? undefined,
       createdAt: file.createdAt,
       updatedAt: file.updatedAt,
-    };
-  }
-
-  /**
-   * 获取存储统计信息
-   */
-  getStorageStats(userId?: string): {
-    totalFiles: number;
-    totalSize: number;
-    formattedSize: string;
-    byCategory: Record<FileCategory, { count: number; size: number }>;
-  } {
-    const files = Array.from(this.fileStorage.values()).filter(
-      (file) => !userId || file.uploaderId === userId,
-    );
-
-    const byCategory: Record<FileCategory, { count: number; size: number }> = {
-      [FileCategory.AVATAR]: { count: 0, size: 0 },
-      [FileCategory.DOCUMENT]: { count: 0, size: 0 },
-      [FileCategory.IMAGE]: { count: 0, size: 0 },
-      [FileCategory.VIDEO]: { count: 0, size: 0 },
-      [FileCategory.AUDIO]: { count: 0, size: 0 },
-      [FileCategory.OTHER]: { count: 0, size: 0 },
-    };
-
-    let totalSize = 0;
-
-    for (const file of files) {
-      totalSize += file.size;
-      byCategory[file.category].count++;
-      byCategory[file.category].size += file.size;
-    }
-
-    return {
-      totalFiles: files.length,
-      totalSize,
-      formattedSize: this.formatFileSize(totalSize),
-      byCategory,
-    };
-  }
-
-  /**
-   * 清理过期文件（示例：清理30天前的临时文件）
-   */
-  cleanupExpiredFiles(daysOld = 30): {
-    deletedCount: number;
-    freedSpace: number;
-  } {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - daysOld);
-
-    const filesToDelete: string[] = [];
-    let freedSpace = 0;
-
-    for (const [fileId, file] of this.fileStorage.entries()) {
-      // 只清理临时文件（没有uploaderId的文件）
-      if (!file.uploaderId && file.createdAt < cutoffDate) {
-        filesToDelete.push(fileId);
-        freedSpace += file.size;
-      }
-    }
-
-    for (const fileId of filesToDelete) {
-      try {
-        const file = this.fileStorage.get(fileId);
-        if (file) {
-          const fullPath = join(this.baseUploadPath, file.path);
-          this.deletePhysicalFile(fullPath);
-          this.fileStorage.delete(fileId);
-        }
-      } catch (error) {
-        this.logger.error(`Failed to cleanup file: ${fileId}`, error);
-      }
-    }
-
-    this.logger.log(
-      `Cleaned up ${filesToDelete.length} expired files, freed ${this.formatFileSize(freedSpace)}`,
-    );
-
-    return {
-      deletedCount: filesToDelete.length,
-      freedSpace,
     };
   }
 }
