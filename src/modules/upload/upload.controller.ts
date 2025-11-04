@@ -86,12 +86,12 @@ export class UploadController {
     description: '上传成功',
     type: UploadResponse,
   })
-  uploadFile(
+  async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: UploadFileDto,
     @CurrentUserId() userId?: string,
-  ): UploadResponse {
-    const fileResponse = this.uploadService.uploadFile(file, dto, userId);
+  ): Promise<UploadResponse> {
+    const fileResponse = await this.uploadService.uploadFile(file, dto, userId);
     return {
       file: fileResponse,
       url: fileResponse.url,
@@ -140,11 +140,11 @@ export class UploadController {
     description: '上传成功',
     type: MultipleUploadResponse,
   })
-  uploadMultipleFiles(
+  async uploadMultipleFiles(
     @UploadedFiles() files: Express.Multer.File[],
     @Body() dto: UploadFileDto,
     @CurrentUserId() userId?: string,
-  ): MultipleUploadResponse {
+  ): Promise<MultipleUploadResponse> {
     return this.uploadService.uploadMultipleFiles(files, dto, userId);
   }
 
@@ -174,16 +174,16 @@ export class UploadController {
     description: '上传成功',
     type: UploadResponse,
   })
-  uploadAvatar(
+  async uploadAvatar(
     @UploadedFile() file: Express.Multer.File,
     @CurrentUserId() userId?: string,
-  ): UploadResponse {
+  ): Promise<UploadResponse> {
     // 验证是否为图片
     if (!file.mimetype.startsWith('image/')) {
       throw new BadRequestException('Avatar must be an image file');
     }
 
-    const fileResponse = this.uploadService.uploadFile(
+    const fileResponse = await this.uploadService.uploadFile(
       file,
       { category: FileCategory.AVATAR, isPublic: true },
       userId,
@@ -240,7 +240,7 @@ export class UploadController {
       },
     },
   })
-  getFileList(
+  async getFileList(
     @Query() query: FileListQueryDto,
     @CurrentUserId() userId?: string,
   ) {
@@ -264,10 +264,10 @@ export class UploadController {
     description: '文件信息',
     type: FileResponse,
   })
-  getFileInfo(
+  async getFileInfo(
     @Param('id') fileId: string,
     @CurrentUserId() userId?: string,
-  ): FileResponse {
+  ): Promise<FileResponse> {
     return this.uploadService.getFileById(fileId, userId);
   }
 
@@ -281,12 +281,15 @@ export class UploadController {
     status: 200,
     description: '文件流',
   })
-  downloadFile(
+  async downloadFile(
     @Param('id') fileId: string,
     @Res({ passthrough: true }) res: Response,
     @CurrentUserId() userId?: string,
-  ): StreamableFile {
-    const { stream, file } = this.uploadService.getFileStream(fileId, userId);
+  ): Promise<StreamableFile> {
+    const { stream, file } = await this.uploadService.getFileStream(
+      fileId,
+      userId,
+    );
 
     // 设置响应头
     res.set({
@@ -307,11 +310,11 @@ export class UploadController {
     status: 200,
     description: '删除成功',
   })
-  deleteFile(
+  async deleteFile(
     @Param('id') fileId: string,
     @CurrentUserId() userId?: string,
-  ): { message: string } {
-    this.uploadService.deleteFile(fileId, userId);
+  ): Promise<{ message: string }> {
+    await this.uploadService.deleteFile(fileId, userId);
     return { message: 'File deleted successfully' };
   }
 
@@ -355,7 +358,7 @@ export class UploadController {
       },
     },
   })
-  deleteMultipleFiles(
+  async deleteMultipleFiles(
     @Body('fileIds') fileIds: string[],
     @CurrentUserId() userId?: string,
   ) {
@@ -389,7 +392,7 @@ export class UploadController {
       },
     },
   })
-  getStorageStats(@CurrentUserId() userId?: string) {
+  async getStorageStats(@CurrentUserId() userId?: string) {
     return this.uploadService.getStorageStats(userId);
   }
 
@@ -422,7 +425,7 @@ export class UploadController {
       },
     },
   })
-  cleanupExpiredFiles(@Body('daysOld') daysOld?: number) {
+  async cleanupExpiredFiles(@Body('daysOld') daysOld?: number) {
     // TODO: 添加管理员权限检查
     return this.uploadService.cleanupExpiredFiles(daysOld);
   }
@@ -448,8 +451,8 @@ export class PublicFileController {
     description: '文件信息',
     type: FileResponse,
   })
-  getPublicFile(@Param('id') fileId: string): FileResponse {
-    const file = this.uploadService.getFileById(fileId);
+  async getPublicFile(@Param('id') fileId: string): Promise<FileResponse> {
+    const file = await this.uploadService.getFileById(fileId);
     if (!file.isPublic) {
       throw new NotFoundException('File not found');
     }
@@ -466,16 +469,16 @@ export class PublicFileController {
     status: 200,
     description: '文件流',
   })
-  downloadPublicFile(
+  async downloadPublicFile(
     @Param('id') fileId: string,
     @Res({ passthrough: true }) res: Response,
-  ): StreamableFile {
-    const file = this.uploadService.getFileById(fileId);
+  ): Promise<StreamableFile> {
+    const file = await this.uploadService.getFileById(fileId);
     if (!file.isPublic) {
       throw new NotFoundException('File not found');
     }
 
-    const { stream } = this.uploadService.getFileStream(fileId);
+    const { stream } = await this.uploadService.getFileStream(fileId);
 
     res.set({
       'Content-Type': file.mimeType,
