@@ -18,6 +18,11 @@ export const appConfig = registerAs('app', () => ({
  */
 export const databaseConfig = registerAs('database', () => ({
   url: process.env.DATABASE_URL,
+  logLevels: process.env.PRISMA_LOG_LEVELS
+    ? process.env.PRISMA_LOG_LEVELS.split(',')
+        .map((level) => level.trim())
+        .filter((level) => level.length > 0)
+    : undefined,
 }));
 
 /**

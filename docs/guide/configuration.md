@@ -50,7 +50,7 @@ const dbUrl = this.configService.get('database.url');
 ### JWT 配置 (jwt)
 
 ```typescript
-const accessSecret = this.configService.get('jwt.accessSecret');
+const accessSecret = this.configService.get('jwt.access.secret');
 const refreshTtl = this.configService.get('jwt.refreshTtl');
 ```
 

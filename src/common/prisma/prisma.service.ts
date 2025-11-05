@@ -4,7 +4,8 @@ import {
   OnModuleInit,
   OnModuleDestroy,
 } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 /**
  * Prisma Service
@@ -17,14 +18,9 @@ export class PrismaService
 {
   private readonly logger = new Logger(PrismaService.name);
 
-  constructor() {
+  constructor(private readonly configService: ConfigService) {
     super({
-      log: [
-        { emit: 'stdout', level: 'query' },
-        { emit: 'stdout', level: 'error' },
-        { emit: 'stdout', level: 'warn' },
-        { emit: 'stdout', level: 'info' },
-      ],
+      log: PrismaService.resolveLogDefinitions(configService),
       errorFormat: 'colorless',
     });
   }
@@ -78,5 +74,27 @@ export class PrismaService
     );
 
     this.logger.warn('⚠️  Database cleaned (test mode only)');
+  }
+
+  private static resolveLogDefinitions(
+    configService: ConfigService,
+  ): Prisma.LogDefinition[] {
+    const explicitLevels = configService
+      .get<string[]>('database.logLevels')
+      ?.filter((level): level is Prisma.LogLevel =>
+        ['query', 'info', 'warn', 'error'].includes(level),
+      );
+
+    const env =
+      configService.get<string>('app.env') || process.env.NODE_ENV || 'development';
+
+    const logLevels: Prisma.LogLevel[] =
+      explicitLevels && explicitLevels.length > 0
+        ? explicitLevels
+        : env === 'production'
+          ? ['error']
+          : ['query', 'info', 'warn', 'error'];
+
+    return logLevels.map((level) => ({ emit: 'stdout', level }));
   }
 }

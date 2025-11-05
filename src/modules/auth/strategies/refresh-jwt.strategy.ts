@@ -17,12 +17,15 @@ export class RefreshJwtStrategy extends PassportStrategy(
   'jwt-refresh',
 ) {
   constructor(configService: ConfigService) {
+    const refreshSecret = configService.get<string>('jwt.refresh.secret');
+    if (!refreshSecret) {
+      throw new Error('JWT refresh secret is not configured');
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'),
       ignoreExpiration: false,
-      secretOrKey:
-        configService.get<string>('jwt.refreshSecret') ||
-        'default-refresh-secret',
+      secretOrKey: refreshSecret,
     });
   }
 
