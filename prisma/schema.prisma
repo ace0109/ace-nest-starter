@@ -34,6 +34,7 @@ model User {
 
   roles            UserRole[]
   oauthConnections OAuthConnection[]
+  files            File[]
 
   @@map("users")
   @@index([email])
@@ -76,6 +77,30 @@ model Permission {
   @@map("permissions")
   @@index([code])
   @@index([module])
+}
+
+/// 文件表
+model File {
+  id           String  @id @default(uuid()) @db.Uuid
+  originalName String  @db.VarChar(255)
+  filename     String  @db.VarChar(255)
+  path         String  @db.VarChar(500)
+  mimeType     String  @db.VarChar(255)
+  size         Int
+  category     String  @db.VarChar(50)
+  description  String? @db.VarChar(500)
+  isPublic     Boolean @default(false) @map("is_public")
+  uploaderId   String? @db.Uuid @map("uploader_id")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  uploader User? @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
+
+  @@map("files")
+  @@index([category])
+  @@index([isPublic])
+  @@index([uploaderId])
 }
 
 // ==================== 关联表 ====================

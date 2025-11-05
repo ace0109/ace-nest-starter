@@ -56,7 +56,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get('jwt.accessSecret'),
+      secretOrKey: configService.get('jwt.access.secret'),
     });
   }
 
@@ -151,14 +151,14 @@ export class AuthService {
 
   async generateAccessToken(payload: any) {
     return this.jwtService.sign(payload, {
-      secret: this.configService.get('jwt.accessSecret'),
+      secret: this.configService.get('jwt.access.secret'),
       expiresIn: this.configService.get('jwt.accessTtl'),
     });
   }
 
   async generateRefreshToken(payload: any) {
     return this.jwtService.sign(payload, {
-      secret: this.configService.get('jwt.refreshSecret'),
+      secret: this.configService.get('jwt.refresh.secret'),
       expiresIn: this.configService.get('jwt.refreshTtl'),
     });
   }
@@ -166,7 +166,7 @@ export class AuthService {
   async refreshToken(refreshToken: string) {
     try {
       const payload = this.jwtService.verify(refreshToken, {
-        secret: this.configService.get('jwt.refreshSecret'),
+        secret: this.configService.get('jwt.refresh.secret'),
       });
 
       // 验证 Redis 中的令牌

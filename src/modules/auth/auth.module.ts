@@ -18,14 +18,18 @@ import { UsersModule } from '../users';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const accessSecret =
-          configService.get<string>('jwt.accessSecret') || 'default-secret';
+        const accessSecret = configService.get<string>('jwt.access.secret');
+        if (!accessSecret) {
+          throw new Error('JWT access secret is not configured');
+        }
+
         const accessExpiresIn =
-          configService.get<string>('jwt.accessExpiresIn') || '15m';
+          configService.get<string | number>('jwt.access.expiresIn') ?? '2h';
+
         return {
           secret: accessSecret,
           signOptions: {
-            expiresIn: accessExpiresIn as unknown as number,
+            expiresIn: accessExpiresIn,
           },
         };
       },

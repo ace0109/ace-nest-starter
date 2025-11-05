@@ -81,13 +81,13 @@ model User {
 // Access Token - 短期有效
 const accessToken = this.jwtService.sign(payload, {
   expiresIn: '15m',
-  secret: this.config.get('jwt.accessSecret'),
+  secret: this.config.get('jwt.access.secret'),
 });
 
 // Refresh Token - 长期有效
 const refreshToken = this.jwtService.sign(payload, {
   expiresIn: '7d',
-  secret: this.config.get('jwt.refreshSecret'),
+  secret: this.config.get('jwt.refresh.secret'),
 });
 ```
 
